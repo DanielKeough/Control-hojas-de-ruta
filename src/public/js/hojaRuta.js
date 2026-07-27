@@ -10,14 +10,14 @@
     const blocks = container.querySelectorAll('.detalle-block');
     blocks.forEach((block, dIdx) => {
       block.querySelectorAll('[name^="detalles["]').forEach((el) => {
-        el.name = el.name.replace(/detalles\[\d+\]/, `detalles[${dIdx}]`);
+        el.name = el.name.replace(/detalles\[[^\]]*\]/, `detalles[${dIdx}]`);
       });
       const numSpan = block.querySelector('.detalle-numero');
       if (numSpan) numSpan.textContent = String(dIdx + 1);
       const remitoRows = block.querySelectorAll('.remito-row');
       remitoRows.forEach((row, rIdx) => {
         row.querySelectorAll('[name*="[remitos]["]').forEach((el) => {
-          el.name = el.name.replace(/remitos\]\[\d+\]/, `remitos][${rIdx}]`);
+          el.name = el.name.replace(/remitos\]\[[^\]]*\]/, `remitos][${rIdx}]`);
         });
       });
     });
