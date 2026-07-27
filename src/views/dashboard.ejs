@@ -13,6 +13,17 @@
       </div>
     </div>
   <% } %>
+  <% if (user.rol === 'CONDUCTOR') { %>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Mis Viajes</h5>
+          <p class="card-text">Cargar hora y kilometraje de inicio/fin de cada tramo de tus viajes.</p>
+          <a href="/mis-viajes" class="btn btn-primary btn-sm">Ir a Mis Viajes</a>
+        </div>
+      </div>
+    </div>
+  <% } %>
   <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
     <div class="col-md-4">
       <div class="card h-100">

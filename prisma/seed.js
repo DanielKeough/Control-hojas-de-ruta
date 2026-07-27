@@ -53,7 +53,7 @@ async function main() {
     create: { razonSocial: 'Transporte Generico SA', controlKmHabilitado: false },
   });
 
-  await prisma.conductor.upsert({
+  const conductorPerez = await prisma.conductor.upsert({
     where: { dni: '20111222' },
     update: {},
     create: { apellido: 'Perez', nombre: 'Juan', dni: '20111222', transportistaId: montiMedia.id },
@@ -63,6 +63,21 @@ async function main() {
     update: {},
     create: { apellido: 'Gomez', nombre: 'Carlos', dni: '25333444', transportistaId: transporteGenerico.id },
   });
+
+  const existeUsuarioConductor = await prisma.usuario.findUnique({ where: { username: 'conductor' } });
+  if (!existeUsuarioConductor) {
+    const passwordHash = await bcrypt.hash('conductor123', 10);
+    await prisma.usuario.create({
+      data: {
+        username: 'conductor',
+        passwordHash,
+        nombre: 'Juan Perez (Conductor)',
+        rol: 'CONDUCTOR',
+        conductorId: conductorPerez.id,
+      },
+    });
+    console.log('Usuario creado: conductor / conductor123 (CONDUCTOR, vinculado a Juan Perez)');
+  }
 
   await prisma.camion.upsert({
     where: { patente: 'AB-123-XZ' },

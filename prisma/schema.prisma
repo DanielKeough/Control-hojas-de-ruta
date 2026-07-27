@@ -11,6 +11,7 @@ enum Rol {
   LOGISTICA
   PORTERIA
   ADMINISTRACION
+  CONDUCTOR
 }
 
 enum EstadoHojaRuta {
@@ -32,17 +33,21 @@ enum EstadoEntrega {
 }
 
 model Usuario {
-  id            Int      @id @default(autoincrement())
-  username      String   @unique
+  id            Int        @id @default(autoincrement())
+  username      String     @unique
   passwordHash  String
   nombre        String
   rol           Rol
-  activo        Boolean  @default(true)
-  createdAt     DateTime @default(now())
+  activo        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  // Solo se completa cuando rol = CONDUCTOR: vincula el login con su ficha de conductor
+  conductorId   Int?       @unique
+  conductor     Conductor? @relation(fields: [conductorId], references: [id])
 
-  hojasCreadas       HojaRuta[] @relation("creador")
-  remitosControlados Remito[]   @relation("usuarioControl")
-  remitosImputados   Remito[]   @relation("usuarioImputacion")
+  hojasCreadas        HojaRuta[]        @relation("creador")
+  remitosControlados  Remito[]          @relation("usuarioControl")
+  remitosImputados    Remito[]          @relation("usuarioImputacion")
+  tramosValidados     HojaRutaDetalle[] @relation("tramoValidadoPor")
 }
 
 model Transportista {
@@ -67,6 +72,7 @@ model Conductor {
   activo          Boolean        @default(true)
 
   hojasRuta HojaRuta[]
+  usuario   Usuario?
 }
 
 model Camion {
@@ -145,11 +151,17 @@ model HojaRutaDetalle {
   rangoHorarioDesde String? // ventana horaria "HH:mm"
   rangoHorarioHasta String?
   numeroOrdenCompra String?
-  // Los siguientes 4 campos solo se usan si el transportista tiene controlKmHabilitado = true
+  // Los siguientes campos solo se usan si el transportista tiene controlKmHabilitado = true.
+  // Los completa el Conductor desde el celular durante el viaje.
   kmInicio         Float?
   horaInicioTramo  String?
   kmFin            Float?
   horaFinTramo     String?
+  // Portería valida los datos de kilometraje/hora cargados por el Conductor
+  tramoValidado      Boolean   @default(false)
+  tramoValidadoPorId Int?
+  tramoValidadoPor   Usuario?  @relation("tramoValidadoPor", fields: [tramoValidadoPorId], references: [id])
+  tramoValidadoFecha DateTime?
 
   remitos Remito[]
 }

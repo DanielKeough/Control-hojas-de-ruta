@@ -1,11 +1,17 @@
 # Hojas de Ruta — Sistema de gestión de despachos
 
 Aplicación web para registrar, controlar y facturar las hojas de ruta de los camiones que
-despachan mercadería a clientes. Pensada para 3 roles:
+despachan mercadería a clientes. Pensada para 4 roles:
 
 - **Logística**: crea y edita las hojas de ruta (encabezado + destinos + remitos).
-- **Portería**: carga el ticket de pesada final y hace el control/cierre de cada remito (recepción, kilos, pallets, IFCOs).
+- **Portería**: carga el ticket de pesada final, hace el control/cierre de cada remito (recepción, kilos, pallets, IFCOs) y valida los datos de kilometraje/hora que carga el Conductor.
 - **Administración**: superusuario. Administra las tablas maestras, usuarios, e imputa las facturas del transporte a cada remito entregado.
+- **Conductor**: solo para transportes con "control de Km habilitado" (ej. Monti Media). Desde el celular, carga la hora y el kilometraje de inicio/fin de cada tramo de sus viajes asignados. Una vez que Portería valida esos datos, quedan bloqueados y el conductor ya no puede modificarlos.
+
+Cada usuario con rol Conductor debe estar vinculado a una ficha de la tabla maestra
+**Conductores** (se configura en `Maestros > Usuarios`, eligiendo el conductor correspondiente
+cuando el rol es "Conductor"). El seed crea un usuario de ejemplo `conductor` / `conductor123`
+vinculado al conductor Juan Pérez (Monti Media).
 
 ## Arquitectura
 

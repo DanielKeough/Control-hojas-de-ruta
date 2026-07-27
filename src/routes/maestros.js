@@ -87,8 +87,16 @@ const CONFIG = {
           { value: 'LOGISTICA', label: 'Logística' },
           { value: 'PORTERIA', label: 'Portería' },
           { value: 'ADMINISTRACION', label: 'Administración' },
+          { value: 'CONDUCTOR', label: 'Conductor' },
         ],
         required: true,
+      },
+      {
+        name: 'conductorId',
+        label: 'Conductor vinculado (solo si el rol es Conductor)',
+        type: 'select',
+        optionsKey: 'conductores',
+        showOnlyIfFieldEquals: { field: 'rol', value: 'CONDUCTOR' },
       },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
@@ -99,6 +107,11 @@ const CONFIG = {
 const LABEL_FIELD = {
   transportistas: 'razonSocial',
   clientes: 'razonSocial',
+};
+
+// Para modelos donde el texto visible se arma con mas de un campo
+const LABEL_FN = {
+  conductores: (r) => `${r.apellido}, ${r.nombre} (DNI ${r.dni})`,
 };
 
 function getConfig(req, res, next) {
@@ -115,8 +128,9 @@ async function loadOptions(cfg) {
     if (field.type === 'select' && field.optionsKey) {
       const refCfg = CONFIG[field.optionsKey];
       const labelField = LABEL_FIELD[field.optionsKey] || 'nombre';
-      const rows = await prisma[refCfg.model].findMany({ orderBy: { [labelField]: 'asc' } });
-      optionsMap[field.name] = rows.map((r) => ({ value: r.id, label: r[labelField], activo: r.activo }));
+      const labelFn = LABEL_FN[field.optionsKey];
+      const rows = await prisma[refCfg.model].findMany({ orderBy: labelFn ? { id: 'asc' } : { [labelField]: 'asc' } });
+      optionsMap[field.name] = rows.map((r) => ({ value: r.id, label: labelFn ? labelFn(r) : r[labelField], activo: r.activo }));
     }
   }
   return optionsMap;
@@ -133,6 +147,14 @@ function coerceBody(cfg, body) {
       data[field.name] = value ? Number(value) : null;
     } else {
       data[field.name] = value === '' ? null : value;
+    }
+  }
+  // El conductor vinculado solo tiene sentido si el rol del usuario es CONDUCTOR
+  if ('conductorId' in data) {
+    if (data.rol !== 'CONDUCTOR') {
+      data.conductorId = null;
+    } else if (!data.conductorId) {
+      throw new Error('Elegí el conductor vinculado a este usuario (rol Conductor).');
     }
   }
   return data;

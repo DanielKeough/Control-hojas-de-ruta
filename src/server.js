@@ -10,6 +10,7 @@ const maestrosRoutes = require('./routes/maestros');
 const hojasRutaRoutes = require('./routes/hojasRuta');
 const controlRoutes = require('./routes/control');
 const facturacionRoutes = require('./routes/facturacion');
+const conductorRoutes = require('./routes/conductor');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/maestros', maestrosRoutes);
 app.use('/hojas-ruta', hojasRutaRoutes);
 app.use('/control', controlRoutes);
 app.use('/facturacion', facturacionRoutes);
+app.use('/mis-viajes', conductorRoutes);
 
 app.use((req, res) => {
   res.status(404).render('error', { title: 'No encontrado', mensaje: 'La página solicitada no existe.' });

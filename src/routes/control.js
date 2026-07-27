@@ -47,6 +47,7 @@ router.post('/:id', async (req, res) => {
     if (!existente) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
 
     const remitosBody = req.body.remitos || {};
+    const detallesBody = req.body.detalles || {};
 
     await prisma.$transaction(async (tx) => {
       await tx.hojaRuta.update({
@@ -65,6 +66,17 @@ router.post('/:id', async (req, res) => {
             ifcoRechazados: toNullableInt(r.ifcoRechazados),
             fechaControl: new Date(),
             usuarioControlId: req.user.id,
+          },
+        });
+      }
+      for (const [detalleKey, d] of Object.entries(detallesBody)) {
+        const validado = d.tramoValidado === 'on' || d.tramoValidado === 'true';
+        await tx.hojaRutaDetalle.update({
+          where: { id: Number(detalleKey.replace(/^d/, '')) },
+          data: {
+            tramoValidado: validado,
+            tramoValidadoPorId: validado ? req.user.id : null,
+            tramoValidadoFecha: validado ? new Date() : null,
           },
         });
       }

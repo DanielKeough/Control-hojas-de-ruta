@@ -6,7 +6,7 @@
     <% } %>
     <form method="post" action="<%= item && item.id ? `/maestros/${key}/${item.id}` : `/maestros/${key}` %>" class="card card-body">
       <% cfg.fields.forEach(function(f) { %>
-        <div class="mb-3">
+        <div class="mb-3 campo-condicional" <% if (f.showOnlyIfFieldEquals) { %>data-depende-de="<%= f.showOnlyIfFieldEquals.field %>" data-valor-esperado="<%= f.showOnlyIfFieldEquals.value %>"<% } %>>
           <% if (f.type === 'checkbox') { %>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" name="<%= f.name %>" id="f_<%= f.name %>"
@@ -43,3 +43,20 @@
     </form>
   </div>
 </div>
+
+<script>
+  (function () {
+    document.querySelectorAll('.campo-condicional[data-depende-de]').forEach(function (campo) {
+      const depende = campo.dataset.dependeDe;
+      const esperado = campo.dataset.valorEsperado;
+      const control = document.getElementById('f_' + depende);
+      if (!control) return;
+      function actualizar() {
+        campo.style.display = control.value === esperado ? '' : 'none';
+      }
+      control.addEventListener('change', actualizar);
+      actualizar();
+    });
+  })();
+</script>
+

@@ -1,0 +1,21 @@
+<h4 class="mb-3">Mis Viajes</h4>
+<p class="text-muted small">Solo se listan los viajes con transportes que requieren cargar kilometraje y hora por tramo.</p>
+
+<div class="list-group">
+  <% hojas.forEach(function(h) { %>
+    <a href="/mis-viajes/<%= h.id %>" class="list-group-item list-group-item-action">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <strong>HR-<%= String(h.id).padStart(6,'0') %></strong>
+          <div class="text-muted small"><%= h.transportista.razonSocial %> — <%= h.camion.patente %></div>
+          <div class="text-muted small"><%= new Date(h.fechaHoraEmision).toLocaleString('es-AR') %></div>
+        </div>
+        <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[h.estado]; %>
+        <span class="badge bg-<%= badge %>"><%= h.estado %></span>
+      </div>
+    </a>
+  <% }); %>
+  <% if (hojas.length === 0) { %>
+    <div class="list-group-item text-center text-muted">No tenés viajes asignados todavía.</div>
+  <% } %>
+</div>

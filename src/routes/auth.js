@@ -23,7 +23,13 @@ router.post('/login', async (req, res) => {
     return res.status(401).render('login', { title: 'Ingresar', error: 'Usuario o contraseña incorrectos.' });
   }
 
-  const payload = { id: usuario.id, username: usuario.username, nombre: usuario.nombre, rol: usuario.rol };
+  const payload = {
+    id: usuario.id,
+    username: usuario.username,
+    nombre: usuario.nombre,
+    rol: usuario.rol,
+    conductorId: usuario.conductorId,
+  };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
   res.cookie(COOKIE_NAME, token, {
     httpOnly: true,

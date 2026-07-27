@@ -53,6 +53,9 @@
         <div class="col-md-3"><strong>Hora inicio tramo:</strong> <%= d.horaInicioTramo || '-' %></div>
         <div class="col-md-3"><strong>Km fin tramo:</strong> <%= d.kmFin != null ? d.kmFin : '-' %></div>
         <div class="col-md-3"><strong>Hora fin tramo:</strong> <%= d.horaFinTramo || '-' %></div>
+        <div class="col-12 mt-1">
+          <% if (d.tramoValidado) { %><span class="badge bg-success">Validado por Portería</span><% } else { %><span class="badge bg-secondary">Pendiente de validación</span><% } %>
+        </div>
       </div>
       <% } %>
       <table class="table table-sm table-bordered mb-0">

@@ -25,6 +25,23 @@
     <div class="card mb-3">
       <div class="card-header">Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %></div>
       <div class="card-body">
+        <% if (hoja.transportista.controlKmHabilitado) { %>
+          <div class="row g-3 mb-3 align-items-end bg-light p-2 rounded">
+            <div class="col-md-2"><small class="text-muted d-block">Km inicio</small><%= d.kmInicio != null ? d.kmInicio : '-' %></div>
+            <div class="col-md-2"><small class="text-muted d-block">Hora inicio</small><%= d.horaInicioTramo || '-' %></div>
+            <div class="col-md-2"><small class="text-muted d-block">Km fin</small><%= d.kmFin != null ? d.kmFin : '-' %></div>
+            <div class="col-md-2"><small class="text-muted d-block">Hora fin</small><%= d.horaFinTramo || '-' %></div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="detalles[d<%= d.id %>][tramoValidado]" id="val_<%= d.id %>" <%= d.tramoValidado ? 'checked' : '' %>>
+                <label class="form-check-label" for="val_<%= d.id %>">
+                  Validar datos de kilometraje/hora cargados por el conductor
+                  <% if (d.tramoValidado) { %><span class="badge bg-success ms-1">Validado</span><% } %>
+                </label>
+              </div>
+            </div>
+          </div>
+        <% } %>
         <table class="table table-sm align-middle">
           <thead>
             <tr>

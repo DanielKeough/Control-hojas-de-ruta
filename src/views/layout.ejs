@@ -24,6 +24,9 @@
           <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/control">Control y Cierre</a></li>
           <% } %>
+          <% if (user.rol === 'CONDUCTOR') { %>
+            <li class="nav-item"><a class="nav-link" href="/mis-viajes">Mis Viajes</a></li>
+          <% } %>
           <% if (user.rol === 'ADMINISTRACION') { %>
             <li class="nav-item"><a class="nav-link" href="/facturacion">Imputacion Factura</a></li>
             <li class="nav-item dropdown">
