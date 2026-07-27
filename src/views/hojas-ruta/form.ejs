@@ -1,0 +1,198 @@
+<%
+function fmtDatetimeLocal(d) {
+  const dt = d ? new Date(d) : new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+function esc(v) { return v === null || v === undefined ? '' : v; }
+%>
+<h4 class="mb-3"><%= title %></h4>
+<% if (error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
+<form method="post" action="<%= hoja ? `/hojas-ruta/${hoja.id}` : '/hojas-ruta' %>" id="form-hoja-ruta">
+  <div class="card mb-3">
+    <div class="card-header">Encabezado</div>
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-md-3">
+          <label class="form-label">Fecha y hora de emisión</label>
+          <input type="datetime-local" class="form-control" name="fechaHoraEmision" value="<%= fmtDatetimeLocal(hoja ? hoja.fechaHoraEmision : null) %>" required>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Transporte</label>
+          <select class="form-select" id="f-transportista" name="transportistaId" required>
+            <option value="">-- Seleccionar --</option>
+            <% transportistas.forEach(function(t) { %>
+              <option value="<%= t.id %>" data-km="<%= t.controlKmHabilitado %>" <%= hoja && hoja.transportistaId === t.id ? 'selected' : '' %>><%= t.razonSocial %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Patente camión</label>
+          <select class="form-select" name="camionId" required>
+            <option value="">-- Seleccionar --</option>
+            <% camiones.forEach(function(c) { %>
+              <option value="<%= c.id %>" <%= hoja && hoja.camionId === c.id ? 'selected' : '' %>><%= c.patente %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Patente acoplado</label>
+          <select class="form-select" name="acopladoId">
+            <option value="">(sin acoplado)</option>
+            <% acoplados.forEach(function(a) { %>
+              <option value="<%= a.id %>" <%= hoja && hoja.acopladoId === a.id ? 'selected' : '' %>><%= a.patente %></option>
+            <% }); %>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Ticket pesada balanza</label>
+          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= esc(hoja ? hoja.ticketPesadaBalanza : '') %>" placeholder="Lo completa Portería">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Conductor (Apellido y Nombre / DNI)</label>
+          <select class="form-select" name="conductorId" required>
+            <option value="">-- Seleccionar --</option>
+            <% conductores.forEach(function(c) { %>
+              <option value="<%= c.id %>" <%= hoja && hoja.conductorId === c.id ? 'selected' : '' %>><%= c.apellido %>, <%= c.nombre %> (DNI <%= c.dni %>)</option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h5>Destinos de entrega</h5>
+  <div id="detalles-container"></div>
+  <button type="button" id="btn-add-detalle" class="btn btn-outline-primary mb-3">+ Agregar destino</button>
+
+  <div class="d-flex gap-2 mb-5">
+    <button type="submit" class="btn btn-primary">Guardar Hoja de Ruta</button>
+    <a href="<%= hoja ? `/hojas-ruta/${hoja.id}` : '/hojas-ruta' %>" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+
+<!-- Template de un destino (se clona por JS) -->
+<template id="tpl-detalle">
+  <div class="card mb-3 detalle-block">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <span>Destino #<span class="detalle-numero">1</span></span>
+      <button type="button" class="btn btn-outline-danger btn-sm btn-remove-detalle">Quitar destino</button>
+    </div>
+    <div class="card-body">
+      <div class="row g-3 mb-2">
+        <div class="col-md-3">
+          <label class="form-label">Cliente</label>
+          <select class="form-select form-select-sm f-cliente" name="detalles[__D__][clienteId]" required>
+            <option value="">-- Seleccionar --</option>
+            <% clientes.forEach(function(c) { %><option value="<%= c.id %>"><%= c.razonSocial %></option><% }); %>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Sucursal</label>
+          <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required>
+            <option value="">-- Elegir cliente primero --</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Domicilio de entrega</label>
+          <input type="text" class="form-control form-control-sm f-domicilio" name="detalles[__D__][domicilioEntrega]" required>
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Orden prioridad</label>
+          <input type="number" min="1" class="form-control form-control-sm f-orden" name="detalles[__D__][ordenPrioridad]" value="1" required>
+        </div>
+      </div>
+      <div class="row g-3 mb-2">
+        <div class="col-md-2">
+          <label class="form-label">N° Turno</label>
+          <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroTurno]">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Hora turno</label>
+          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaTurno]">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Rango desde</label>
+          <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioDesde]">
+        </div>
+        <div class="col-md-2">
+          <label class="form-label">Rango hasta</label>
+          <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioHasta]">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">N° Orden de compra cliente</label>
+          <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroOrdenCompra]">
+        </div>
+      </div>
+      <div class="row g-3 mb-2 bloque-km" style="display:none;">
+        <div class="col-12"><small class="text-muted">Campos exclusivos de transportes con control de kilometraje (ej. Monti Media)</small></div>
+        <div class="col-md-3">
+          <label class="form-label">Km inicio tramo</label>
+          <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmInicio]">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Hora inicio tramo</label>
+          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaInicioTramo]">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Km fin tramo</label>
+          <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmFin]">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Hora fin tramo</label>
+          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaFinTramo]">
+        </div>
+      </div>
+
+      <table class="table table-sm align-middle remitos-table">
+        <thead>
+          <tr><th>N° Remito</th><th>Kilos desp.</th><th>Pallets desp.</th><th>Cant. IFCO</th><th>N° Remito IFCO</th><th></th></tr>
+        </thead>
+        <tbody class="remitos-container"></tbody>
+      </table>
+      <button type="button" class="btn btn-outline-primary btn-sm btn-add-remito">+ Agregar remito</button>
+    </div>
+  </div>
+</template>
+
+<!-- Template de una fila de remito (se clona por JS) -->
+<template id="tpl-remito">
+  <tr class="remito-row">
+    <td><input type="text" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][numeroRemito]" required></td>
+    <td><input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][kilosDespachados]" required></td>
+    <td><input type="number" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][palletsDespachados]" required></td>
+    <td><input type="number" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][cantidadIfco]" value="0"></td>
+    <td><input type="text" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][numeroRemitoIfco]"></td>
+    <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-remito">&times;</button></td>
+  </tr>
+</template>
+
+<script>
+  window.__SUCURSALES__ = <%- JSON.stringify(sucursales.map(s => ({ id: s.id, clienteId: s.clienteId, nombre: s.nombre, domicilio: s.domicilio }))).replace(/</g, '\\u003c') %>;
+  window.__INITIAL_DETALLES__ = <%- JSON.stringify(hoja ? hoja.detalles.map(d => ({
+    ordenPrioridad: d.ordenPrioridad,
+    clienteId: d.clienteId,
+    sucursalId: d.sucursalId,
+    domicilioEntrega: d.domicilioEntrega,
+    numeroTurno: d.numeroTurno,
+    horaTurno: d.horaTurno,
+    rangoHorarioDesde: d.rangoHorarioDesde,
+    rangoHorarioHasta: d.rangoHorarioHasta,
+    numeroOrdenCompra: d.numeroOrdenCompra,
+    kmInicio: d.kmInicio,
+    horaInicioTramo: d.horaInicioTramo,
+    kmFin: d.kmFin,
+    horaFinTramo: d.horaFinTramo,
+    remitos: d.remitos.map(r => ({
+      numeroRemito: r.numeroRemito,
+      kilosDespachados: r.kilosDespachados,
+      palletsDespachados: r.palletsDespachados,
+      cantidadIfco: r.cantidadIfco,
+      numeroRemitoIfco: r.numeroRemitoIfco,
+    })),
+  })) : []).replace(/</g, '\\u003c') %>;
+</script>
+<script src="/js/hojaRuta.js"></script>

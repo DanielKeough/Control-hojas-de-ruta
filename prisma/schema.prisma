@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  LOGISTICA
+  PORTERIA
+  ADMINISTRACION
+}
+
+enum EstadoHojaRuta {
+  ABIERTA // cargada por Logistica, pendiente de control
+  CONTROLADA // Porteria realizo el control y cierre
+  FACTURADA // Administracion imputo las facturas de todos los remitos
+}
+
+enum RecepcionEstado {
+  PENDIENTE
+  TOTAL
+  PARCIAL
+}
+
+enum EstadoEntrega {
+  PENDIENTE
+  ENTREGADO
+  RECHAZADO
+}
+
+model Usuario {
+  id            Int      @id @default(autoincrement())
+  username      String   @unique
+  passwordHash  String
+  nombre        String
+  rol           Rol
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  hojasCreadas       HojaRuta[] @relation("creador")
+  remitosControlados Remito[]   @relation("usuarioControl")
+  remitosImputados   Remito[]   @relation("usuarioImputacion")
+}
+
+model Transportista {
+  id                  Int      @id @default(autoincrement())
+  razonSocial         String
+  controlKmHabilitado Boolean  @default(false) // habilita los campos de kilometraje/hora por tramo (ej. "Monti Media")
+  activo              Boolean  @default(true)
+
+  conductores Conductor[]
+  camiones    Camion[]
+  acoplados   Acoplado[]
+  hojasRuta   HojaRuta[]
+}
+
+model Conductor {
+  id              Int            @id @default(autoincrement())
+  apellido        String
+  nombre          String
+  dni             String         @unique
+  transportistaId Int?
+  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
+  activo          Boolean        @default(true)
+
+  hojasRuta HojaRuta[]
+}
+
+model Camion {
+  id              Int            @id @default(autoincrement())
+  patente         String         @unique
+  transportistaId Int?
+  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
+  activo          Boolean        @default(true)
+
+  hojasRuta HojaRuta[]
+}
+
+model Acoplado {
+  id              Int            @id @default(autoincrement())
+  patente         String         @unique
+  transportistaId Int?
+  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
+  activo          Boolean        @default(true)
+
+  hojasRuta HojaRuta[]
+}
+
+model Cliente {
+  id          Int        @id @default(autoincrement())
+  razonSocial String
+  activo      Boolean    @default(true)
+
+  sucursales  Sucursal[]
+  detalles    HojaRutaDetalle[]
+}
+
+model Sucursal {
+  id        Int     @id @default(autoincrement())
+  clienteId Int
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  nombre    String
+  domicilio String
+  activo    Boolean @default(true)
+
+  detalles HojaRutaDetalle[]
+}
+
+model HojaRuta {
+  id                  Int            @id @default(autoincrement())
+  fechaHoraEmision    DateTime       @default(now())
+  transportistaId     Int
+  transportista       Transportista  @relation(fields: [transportistaId], references: [id])
+  camionId            Int
+  camion              Camion         @relation(fields: [camionId], references: [id])
+  acopladoId          Int?
+  acoplado            Acoplado?      @relation(fields: [acopladoId], references: [id])
+  conductorId         Int
+  conductor           Conductor      @relation(fields: [conductorId], references: [id])
+  ticketPesadaBalanza String?
+  estado              EstadoHojaRuta @default(ABIERTA)
+  usuarioCreadorId    Int
+  usuarioCreador      Usuario        @relation("creador", fields: [usuarioCreadorId], references: [id])
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  detalles HojaRutaDetalle[]
+}
+
+model HojaRutaDetalle {
+  id               Int      @id @default(autoincrement())
+  hojaRutaId       Int
+  hojaRuta         HojaRuta @relation(fields: [hojaRutaId], references: [id], onDelete: Cascade)
+  ordenPrioridad   Int
+  clienteId        Int
+  cliente          Cliente  @relation(fields: [clienteId], references: [id])
+  sucursalId       Int
+  sucursal         Sucursal @relation(fields: [sucursalId], references: [id])
+  domicilioEntrega String
+  numeroTurno      String?
+  horaTurno        String? // hora especifica "HH:mm"
+  rangoHorarioDesde String? // ventana horaria "HH:mm"
+  rangoHorarioHasta String?
+  numeroOrdenCompra String?
+  // Los siguientes 4 campos solo se usan si el transportista tiene controlKmHabilitado = true
+  kmInicio         Float?
+  horaInicioTramo  String?
+  kmFin            Float?
+  horaFinTramo     String?
+
+  remitos Remito[]
+}
+
+model Remito {
+  id                 Int             @id @default(autoincrement())
+  detalleId          Int
+  detalle            HojaRutaDetalle @relation(fields: [detalleId], references: [id], onDelete: Cascade)
+  numeroRemito       String
+  kilosDespachados   Float
+  palletsDespachados Int
+  cantidadIfco       Int             @default(0)
+  numeroRemitoIfco   String?
+
+  // --- Control y cierre (carga Porteria) ---
+  recepcionEstado    RecepcionEstado @default(PENDIENTE)
+  kilosRecepcionados Float?
+  palletsArlog       Int?
+  palletsDescartable Int?
+  ifcoRecibidos      Int?
+  ifcoRechazados     Int?
+  fechaControl       DateTime?
+  usuarioControlId   Int?
+  usuarioControl     Usuario?        @relation("usuarioControl", fields: [usuarioControlId], references: [id])
+
+  // --- Imputacion con factura comercial (carga Administracion) ---
+  estadoEntrega       EstadoEntrega @default(PENDIENTE)
+  numeroFactura       String?
+  fechaImputacion     DateTime?
+  usuarioImputacionId Int?
+  usuarioImputacion   Usuario?      @relation("usuarioImputacion", fields: [usuarioImputacionId], references: [id])
+}

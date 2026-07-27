@@ -1,0 +1,49 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0">Hojas de Ruta</h4>
+  <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
+    <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">+ Nueva Hoja de Ruta</a>
+  <% } %>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+  <div class="col-auto">
+    <input type="number" name="numero" class="form-control form-control-sm" placeholder="N° de hoja de ruta" value="<%= numero %>">
+  </div>
+  <div class="col-auto">
+    <button class="btn btn-outline-secondary btn-sm" type="submit">Buscar</button>
+    <a href="/hojas-ruta" class="btn btn-link btn-sm">Limpiar</a>
+  </div>
+</form>
+
+<table class="table table-sm table-striped bg-white">
+  <thead>
+    <tr>
+      <th>N°</th>
+      <th>Fecha emisión</th>
+      <th>Transporte</th>
+      <th>Camión</th>
+      <th>Conductor</th>
+      <th>Estado</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% hojas.forEach(function(h) { %>
+      <tr>
+        <td><strong>HR-<%= String(h.id).padStart(6,'0') %></strong></td>
+        <td><%= new Date(h.fechaHoraEmision).toLocaleString('es-AR') %></td>
+        <td><%= h.transportista.razonSocial %></td>
+        <td><%= h.camion.patente %></td>
+        <td><%= h.conductor.apellido %>, <%= h.conductor.nombre %></td>
+        <td>
+          <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[h.estado]; %>
+          <span class="badge bg-<%= badge %>"><%= h.estado %></span>
+        </td>
+        <td><a href="/hojas-ruta/<%= h.id %>" class="btn btn-outline-primary btn-sm">Ver</a></td>
+      </tr>
+    <% }); %>
+    <% if (hojas.length === 0) { %>
+      <tr><td colspan="7" class="text-center text-muted">No se encontraron hojas de ruta.</td></tr>
+    <% } %>
+  </tbody>
+</table>

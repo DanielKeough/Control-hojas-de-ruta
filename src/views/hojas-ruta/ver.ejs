@@ -1,0 +1,93 @@
+<div class="d-flex justify-content-between align-items-start mb-3">
+  <h4>Hoja de Ruta HR-<%= String(hoja.id).padStart(6,'0') %>
+    <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[hoja.estado]; %>
+    <span class="badge bg-<%= badge %>"><%= hoja.estado %></span>
+  </h4>
+  <div class="d-flex gap-2">
+    <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol) && hoja.estado === 'ABIERTA') { %>
+      <a href="/hojas-ruta/<%= hoja.id %>/editar" class="btn btn-outline-secondary btn-sm">Editar</a>
+    <% } %>
+    <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
+      <a href="/control/<%= hoja.id %>" class="btn btn-outline-info btn-sm">Control y Cierre</a>
+    <% } %>
+    <% if (user.rol === 'ADMINISTRACION') { %>
+      <a href="/facturacion/<%= hoja.id %>" class="btn btn-outline-success btn-sm">Imputación Factura</a>
+    <% } %>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header">Encabezado</div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3"><strong>Fecha y hora emisión:</strong><br><%= new Date(hoja.fechaHoraEmision).toLocaleString('es-AR') %></div>
+      <div class="col-md-3"><strong>Transporte:</strong><br><%= hoja.transportista.razonSocial %></div>
+      <div class="col-md-2"><strong>Patente camión:</strong><br><%= hoja.camion.patente %></div>
+      <div class="col-md-2"><strong>Patente acoplado:</strong><br><%= hoja.acoplado ? hoja.acoplado.patente : '-' %></div>
+      <div class="col-md-2"><strong>Ticket pesada balanza:</strong><br><%= hoja.ticketPesadaBalanza || '-' %></div>
+    </div>
+    <div class="row mt-3">
+      <div class="col-md-3"><strong>Conductor:</strong><br><%= hoja.conductor.apellido %>, <%= hoja.conductor.nombre %></div>
+      <div class="col-md-3"><strong>DNI conductor:</strong><br><%= hoja.conductor.dni %></div>
+      <div class="col-md-3"><strong>Creada por:</strong><br><%= hoja.usuarioCreador.nombre %></div>
+    </div>
+  </div>
+</div>
+
+<% hoja.detalles.forEach(function(d) { %>
+  <div class="card mb-3">
+    <div class="card-header">
+      Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %>
+    </div>
+    <div class="card-body">
+      <div class="row mb-2">
+        <div class="col-md-4"><strong>Domicilio de entrega:</strong> <%= d.domicilioEntrega %></div>
+        <div class="col-md-2"><strong>N° Turno:</strong> <%= d.numeroTurno || '-' %></div>
+        <div class="col-md-2"><strong>Hora turno:</strong> <%= d.horaTurno || '-' %></div>
+        <div class="col-md-2"><strong>Rango horario:</strong> <%= (d.rangoHorarioDesde || d.rangoHorarioHasta) ? `${d.rangoHorarioDesde||''} - ${d.rangoHorarioHasta||''}` : '-' %></div>
+        <div class="col-md-2"><strong>OC Cliente:</strong> <%= d.numeroOrdenCompra || '-' %></div>
+      </div>
+      <% if (hoja.transportista.controlKmHabilitado) { %>
+      <div class="row mb-2">
+        <div class="col-md-3"><strong>Km inicio tramo:</strong> <%= d.kmInicio != null ? d.kmInicio : '-' %></div>
+        <div class="col-md-3"><strong>Hora inicio tramo:</strong> <%= d.horaInicioTramo || '-' %></div>
+        <div class="col-md-3"><strong>Km fin tramo:</strong> <%= d.kmFin != null ? d.kmFin : '-' %></div>
+        <div class="col-md-3"><strong>Hora fin tramo:</strong> <%= d.horaFinTramo || '-' %></div>
+      </div>
+      <% } %>
+      <table class="table table-sm table-bordered mb-0">
+        <thead>
+          <tr>
+            <th>Remito</th><th>Kilos desp.</th><th>Pallets desp.</th><th>IFCOs desp.</th><th>Remito IFCO</th>
+            <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib./rech.</th>
+            <th>Entrega</th><th>N° Factura</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% d.remitos.forEach(function(r) { %>
+            <tr>
+              <td><%= r.numeroRemito %></td>
+              <td><%= r.kilosDespachados %></td>
+              <td><%= r.palletsDespachados %></td>
+              <td><%= r.cantidadIfco %></td>
+              <td><%= r.numeroRemitoIfco || '-' %></td>
+              <td>
+                <% const recBadge = { PENDIENTE: 'secondary', TOTAL: 'success', PARCIAL: 'warning' }[r.recepcionEstado]; %>
+                <span class="badge bg-<%= recBadge %>"><%= r.recepcionEstado %></span>
+              </td>
+              <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>
+              <td><%= r.palletsArlog != null ? r.palletsArlog : '-' %></td>
+              <td><%= r.palletsDescartable != null ? r.palletsDescartable : '-' %></td>
+              <td><%= (r.ifcoRecibidos != null || r.ifcoRechazados != null) ? `${r.ifcoRecibidos||0} / ${r.ifcoRechazados||0}` : '-' %></td>
+              <td>
+                <% const entBadge = { PENDIENTE: 'secondary', ENTREGADO: 'success', RECHAZADO: 'danger' }[r.estadoEntrega]; %>
+                <span class="badge bg-<%= entBadge %>"><%= r.estadoEntrega %></span>
+              </td>
+              <td><%= r.numeroFactura || '-' %></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+<% }); %>

@@ -1,0 +1,73 @@
+<h4 class="mb-3">Control y Cierre — Hoja de Ruta HR-<%= String(hoja.id).padStart(6,'0') %></h4>
+<% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-3"><strong>Transporte:</strong><br><%= hoja.transportista.razonSocial %></div>
+      <div class="col-md-2"><strong>Patente camión:</strong><br><%= hoja.camion.patente %></div>
+      <div class="col-md-2"><strong>Patente acoplado:</strong><br><%= hoja.acoplado ? hoja.acoplado.patente : '-' %></div>
+      <div class="col-md-3"><strong>Conductor:</strong><br><%= hoja.conductor.apellido %>, <%= hoja.conductor.nombre %></div>
+      <div class="col-md-2"><strong>DNI:</strong><br><%= hoja.conductor.dni %></div>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/control/<%= hoja.id %>">
+  <div class="card mb-3">
+    <div class="card-body">
+      <label class="form-label">Número de Ticket de pesada de balanza</label>
+      <input type="text" class="form-control" style="max-width: 300px;" name="ticketPesadaBalanza" value="<%= hoja.ticketPesadaBalanza || '' %>">
+    </div>
+  </div>
+
+  <% hoja.detalles.forEach(function(d) { %>
+    <div class="card mb-3">
+      <div class="card-header">Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %></div>
+      <div class="card-body">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr>
+              <th>Remito</th>
+              <th>Kilos / Pallets desp.</th>
+              <th>Recepción</th>
+              <th>Kilos recibidos</th>
+              <th>Pallets ARLOG</th>
+              <th>Pallets descartables</th>
+              <th>IFCO recibidos</th>
+              <th>IFCO rechazados</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% d.remitos.forEach(function(r) { %>
+              <tr>
+                <td>
+                  <%= r.numeroRemito %>
+                  <% if (r.cantidadIfco > 0) { %><br><small class="text-muted">IFCO: <%= r.cantidadIfco %> (remito <%= r.numeroRemitoIfco || '-' %>)</small><% } %>
+                </td>
+                <td><%= r.kilosDespachados %> kg / <%= r.palletsDespachados %> pallets</td>
+                <td>
+                  <select class="form-select form-select-sm" name="remitos[<%= r.id %>][recepcionEstado]">
+                    <% ['PENDIENTE','TOTAL','PARCIAL'].forEach(function(opt) { %>
+                      <option value="<%= opt %>" <%= r.recepcionEstado === opt ? 'selected' : '' %>><%= opt %></option>
+                    <% }); %>
+                  </select>
+                </td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm" name="remitos[<%= r.id %>][kilosRecepcionados]" value="<%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '' %>"></td>
+                <td><input type="number" class="form-control form-control-sm" name="remitos[<%= r.id %>][palletsArlog]" value="<%= r.palletsArlog != null ? r.palletsArlog : '' %>"></td>
+                <td><input type="number" class="form-control form-control-sm" name="remitos[<%= r.id %>][palletsDescartable]" value="<%= r.palletsDescartable != null ? r.palletsDescartable : '' %>"></td>
+                <td><input type="number" class="form-control form-control-sm" name="remitos[<%= r.id %>][ifcoRecibidos]" value="<%= r.ifcoRecibidos != null ? r.ifcoRecibidos : '' %>"></td>
+                <td><input type="number" class="form-control form-control-sm" name="remitos[<%= r.id %>][ifcoRechazados]" value="<%= r.ifcoRechazados != null ? r.ifcoRechazados : '' %>"></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% }); %>
+
+  <div class="d-flex gap-2 mb-5">
+    <button type="submit" class="btn btn-primary">Guardar Control y Cierre</button>
+    <a href="/hojas-ruta/<%= hoja.id %>" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>

@@ -1,0 +1,10 @@
+body {
+  background-color: #f4f6f8;
+}
+.card-header {
+  font-weight: 600;
+}
+table.remitos-table input,
+table.remitos-table select {
+  min-width: 90px;
+}

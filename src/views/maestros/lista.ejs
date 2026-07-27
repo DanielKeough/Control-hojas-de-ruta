@@ -1,0 +1,42 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><%= cfg.titulo %></h4>
+  <a href="/maestros/<%= key %>/nuevo" class="btn btn-primary btn-sm">+ Nuevo <%= cfg.singular %></a>
+</div>
+
+<table class="table table-sm table-striped bg-white">
+  <thead>
+    <tr>
+      <th>#</th>
+      <% cfg.fields.filter(f => f.name !== 'password').forEach(function(f) { %>
+        <th><%= f.label %></th>
+      <% }); %>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% items.forEach(function(item) { %>
+      <tr class="<%= item.activo === false ? 'text-muted' : '' %>">
+        <td><%= item.id %></td>
+        <% cfg.fields.filter(f => f.name !== 'password').forEach(function(f) { %>
+          <td>
+            <% if (f.type === 'checkbox') { %>
+              <%= item[f.name] ? 'Sí' : 'No' %>
+            <% } else if (f.type === 'select' && f.optionsKey) { %>
+              <% const opt = (optionsMap[f.name] || []).find(o => o.value === item[f.name]); %>
+              <%= opt ? opt.label : '-' %>
+            <% } else if (f.type === 'select' && f.options) { %>
+              <% const opt = f.options.find(o => o.value === item[f.name]); %>
+              <%= opt ? opt.label : item[f.name] %>
+            <% } else { %>
+              <%= item[f.name] != null ? item[f.name] : '-' %>
+            <% } %>
+          </td>
+        <% }); %>
+        <td><a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-secondary btn-sm">Editar</a></td>
+      </tr>
+    <% }); %>
+    <% if (items.length === 0) { %>
+      <tr><td colspan="20" class="text-center text-muted">No hay registros cargados.</td></tr>
+    <% } %>
+  </tbody>
+</table>

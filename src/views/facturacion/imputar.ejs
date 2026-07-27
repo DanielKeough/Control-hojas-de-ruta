@@ -1,0 +1,65 @@
+<h4 class="mb-3">Imputación de Factura — Hoja de Ruta HR-<%= String(hoja.id).padStart(6,'0') %></h4>
+<% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+<div class="card mb-3">
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-4"><strong>Transporte:</strong> <%= hoja.transportista.razonSocial %></div>
+      <div class="col-md-3"><strong>Patente camión:</strong> <%= hoja.camion.patente %></div>
+      <div class="col-md-3"><strong>Conductor:</strong> <%= hoja.conductor.apellido %>, <%= hoja.conductor.nombre %></div>
+    </div>
+  </div>
+</div>
+
+<form method="post" action="/facturacion/<%= hoja.id %>">
+  <% hoja.detalles.forEach(function(d) { %>
+    <div class="card mb-3">
+      <div class="card-header">Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %></div>
+      <div class="card-body">
+        <table class="table table-sm align-middle">
+          <thead>
+            <tr><th>Remito</th><th>Recepción</th><th>Entrega</th><th>N° Factura del transporte</th></tr>
+          </thead>
+          <tbody>
+            <% d.remitos.forEach(function(r) { %>
+              <tr>
+                <td><%= r.numeroRemito %></td>
+                <td>
+                  <% const recBadge = { PENDIENTE: 'secondary', TOTAL: 'success', PARCIAL: 'warning' }[r.recepcionEstado]; %>
+                  <span class="badge bg-<%= recBadge %>"><%= r.recepcionEstado %></span>
+                </td>
+                <td>
+                  <select class="form-select form-select-sm f-estado-entrega" name="remitos[<%= r.id %>][estadoEntrega]" data-remito="<%= r.id %>">
+                    <% ['PENDIENTE','ENTREGADO','RECHAZADO'].forEach(function(opt) { %>
+                      <option value="<%= opt %>" <%= r.estadoEntrega === opt ? 'selected' : '' %>><%= opt %></option>
+                    <% }); %>
+                  </select>
+                </td>
+                <td>
+                  <input type="text" class="form-control form-control-sm f-numero-factura" data-remito="<%= r.id %>"
+                    name="remitos[<%= r.id %>][numeroFactura]" value="<%= r.numeroFactura || '' %>"
+                    <%= r.estadoEntrega !== 'ENTREGADO' ? 'disabled' : '' %>>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% }); %>
+
+  <div class="d-flex gap-2 mb-5">
+    <button type="submit" class="btn btn-primary">Guardar Imputación</button>
+    <a href="/hojas-ruta/<%= hoja.id %>" class="btn btn-outline-secondary">Cancelar</a>
+  </div>
+</form>
+
+<script>
+  document.querySelectorAll('.f-estado-entrega').forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      const facturaInput = document.querySelector('.f-numero-factura[data-remito="' + this.dataset.remito + '"]');
+      facturaInput.disabled = this.value !== 'ENTREGADO';
+      if (facturaInput.disabled) facturaInput.value = '';
+    });
+  });
+</script>

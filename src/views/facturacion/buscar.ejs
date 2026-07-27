@@ -1,0 +1,44 @@
+<h4 class="mb-3">Imputación de Hoja de Ruta con Factura Comercial</h4>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6">
+    <label class="form-label">Elegir de la lista</label>
+    <select class="form-select" onchange="if(this.value) window.location = '/facturacion/' + this.value;">
+      <option value="">-- Seleccionar hoja de ruta --</option>
+      <% hojas.forEach(function(h) { %>
+        <option value="<%= h.id %>">HR-<%= String(h.id).padStart(6,'0') %> — <%= h.transportista.razonSocial %> — <%= h.camion.patente %> — <%= new Date(h.fechaHoraEmision).toLocaleDateString('es-AR') %> (<%= h.estado %>)</option>
+      <% }); %>
+    </select>
+  </div>
+  <div class="col-md-4">
+    <label class="form-label">O ingresar número directamente</label>
+    <form class="d-flex gap-2" onsubmit="event.preventDefault(); if(this.numero.value) window.location='/facturacion/' + this.numero.value;">
+      <input type="number" name="numero" class="form-control" placeholder="N° de hoja de ruta">
+      <button class="btn btn-outline-secondary" type="submit">Ir</button>
+    </form>
+  </div>
+</div>
+
+<p class="text-muted">Solo se listan hojas de ruta que ya pasaron por Control y Cierre.</p>
+
+<table class="table table-sm table-striped bg-white">
+  <thead><tr><th>N°</th><th>Fecha</th><th>Transporte</th><th>Camión</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+    <% hojas.forEach(function(h) { %>
+      <tr>
+        <td>HR-<%= String(h.id).padStart(6,'0') %></td>
+        <td><%= new Date(h.fechaHoraEmision).toLocaleString('es-AR') %></td>
+        <td><%= h.transportista.razonSocial %></td>
+        <td><%= h.camion.patente %></td>
+        <td>
+          <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[h.estado]; %>
+          <span class="badge bg-<%= badge %>"><%= h.estado %></span>
+        </td>
+        <td><a href="/facturacion/<%= h.id %>" class="btn btn-outline-success btn-sm">Imputar</a></td>
+      </tr>
+    <% }); %>
+    <% if (hojas.length === 0) { %>
+      <tr><td colspan="6" class="text-center text-muted">No hay hojas de ruta controladas pendientes de imputar.</td></tr>
+    <% } %>
+  </tbody>
+</table>
