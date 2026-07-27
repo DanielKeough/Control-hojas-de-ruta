@@ -53,9 +53,9 @@ router.post('/:id', async (req, res) => {
         where: { id },
         data: { ticketPesadaBalanza: req.body.ticketPesadaBalanza || null },
       });
-      for (const [remitoId, r] of Object.entries(remitosBody)) {
+      for (const [remitoKey, r] of Object.entries(remitosBody)) {
         await tx.remito.update({
-          where: { id: Number(remitoId) },
+          where: { id: Number(remitoKey.replace(/^r/, '')) },
           data: {
             recepcionEstado: r.recepcionEstado || 'PENDIENTE',
             kilosRecepcionados: toNullableFloat(r.kilosRecepcionados),

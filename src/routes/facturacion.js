@@ -38,10 +38,10 @@ router.post('/:id', async (req, res) => {
     const remitosBody = req.body.remitos || {};
 
     await prisma.$transaction(async (tx) => {
-      for (const [remitoId, r] of Object.entries(remitosBody)) {
+      for (const [remitoKey, r] of Object.entries(remitosBody)) {
         const estadoEntrega = r.estadoEntrega || 'PENDIENTE';
         await tx.remito.update({
-          where: { id: Number(remitoId) },
+          where: { id: Number(remitoKey.replace(/^r/, '')) },
           data: {
             estadoEntrega,
             numeroFactura: estadoEntrega === 'ENTREGADO' ? (r.numeroFactura || null) : null,

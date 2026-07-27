@@ -29,7 +29,7 @@
                   <span class="badge bg-<%= recBadge %>"><%= r.recepcionEstado %></span>
                 </td>
                 <td>
-                  <select class="form-select form-select-sm f-estado-entrega" name="remitos[<%= r.id %>][estadoEntrega]" data-remito="<%= r.id %>">
+                  <select class="form-select form-select-sm f-estado-entrega" name="remitos[r<%= r.id %>][estadoEntrega]" data-remito="<%= r.id %>">
                     <% ['PENDIENTE','ENTREGADO','RECHAZADO'].forEach(function(opt) { %>
                       <option value="<%= opt %>" <%= r.estadoEntrega === opt ? 'selected' : '' %>><%= opt %></option>
                     <% }); %>
@@ -37,7 +37,7 @@
                 </td>
                 <td>
                   <input type="text" class="form-control form-control-sm f-numero-factura" data-remito="<%= r.id %>"
-                    name="remitos[<%= r.id %>][numeroFactura]" value="<%= r.numeroFactura || '' %>"
+                    name="remitos[r<%= r.id %>][numeroFactura]" value="<%= r.numeroFactura || '' %>"
                     <%= r.estadoEntrega !== 'ENTREGADO' ? 'disabled' : '' %>>
                 </td>
               </tr>
