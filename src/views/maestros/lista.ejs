@@ -7,7 +7,7 @@
   <thead>
     <tr>
       <th>#</th>
-      <% cfg.fields.filter(f => f.name !== 'password').forEach(function(f) { %>
+      <% displayFields.forEach(function(f) { %>
         <th><%= f.label %></th>
       <% }); %>
       <th></th>
@@ -17,18 +17,24 @@
     <% items.forEach(function(item) { %>
       <tr class="<%= item.activo === false ? 'text-muted' : '' %>">
         <td><%= item.id %></td>
-        <% cfg.fields.filter(f => f.name !== 'password').forEach(function(f) { %>
+        <% displayFields.forEach(function(f) { %>
           <td>
             <% if (f.type === 'checkbox') { %>
               <%= item[f.name] ? 'Sí' : 'No' %>
             <% } else if (f.type === 'select' && f.optionsKey) { %>
               <% const opt = (optionsMap[f.name] || []).find(o => o.value === item[f.name]); %>
               <%= opt ? opt.label : '-' %>
-            <% } else if (f.type === 'select' && f.options) { %>
+            <% } else if ((f.type === 'select' || f.type === 'radio') && f.options) { %>
               <% const opt = f.options.find(o => o.value === item[f.name]); %>
-              <%= opt ? opt.label : item[f.name] %>
+              <%= opt ? opt.label : (item[f.name] || '-') %>
+            <% } else if (f.type === 'multicheckbox') { %>
+              <% const valores = item[f.name] || []; %>
+              <% const labels = f.options.filter(o => valores.includes(o.value)).map(o => o.label); %>
+              <%= labels.length ? labels.join(', ') : '-' %>
+            <% } else if (f.type === 'date') { %>
+              <%= item[f.name] ? new Date(item[f.name]).toLocaleDateString('es-AR') : '-' %>
             <% } else { %>
-              <%= item[f.name] != null ? item[f.name] : '-' %>
+              <%= item[f.name] != null && item[f.name] !== '' ? item[f.name] : '-' %>
             <% } %>
           </td>
         <% }); %>

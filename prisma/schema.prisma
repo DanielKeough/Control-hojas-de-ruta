@@ -32,6 +32,16 @@ enum EstadoEntrega {
   RECHAZADO
 }
 
+enum TipoCamion {
+  TRACTOR
+  CHASIS
+}
+
+enum CondicionConductor {
+  RELACION_DEPENDENCIA
+  INDEPENDIENTE
+}
+
 model Usuario {
   id            Int        @id @default(autoincrement())
   username      String     @unique
@@ -55,6 +65,11 @@ model Transportista {
   razonSocial         String
   controlKmHabilitado Boolean  @default(false) // habilita los campos de kilometraje/hora por tramo (ej. "Monti Media")
   activo              Boolean  @default(true)
+  cuit                String?
+  domicilio           String?
+  codigoPostal        String?
+  localidad           String?
+  provincia           String?
 
   conductores Conductor[]
   camiones    Camion[]
@@ -63,34 +78,63 @@ model Transportista {
 }
 
 model Conductor {
-  id              Int            @id @default(autoincrement())
+  id              Int                 @id @default(autoincrement())
   apellido        String
   nombre          String
-  dni             String         @unique
+  dni             String              @unique
   transportistaId Int?
-  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
-  activo          Boolean        @default(true)
+  transportista   Transportista?      @relation(fields: [transportistaId], references: [id])
+  activo          Boolean             @default(true)
+  empleador                    String?
+  condicion                    CondicionConductor?
+  fechaNacimiento              DateTime?
+  seguroVidaObligatorio        Boolean             @default(false)
+  seguroVidaCompania           String?
+  seguroAccidentesPersonales   Boolean             @default(false)
+  seguroAccidentesCompania     String?
+  registroConducirNumero       String?
+  registroConducirVencimiento  DateTime?
+  categoriasHabilitantes       String[]            @default([])
+  categoriaOtraDetalle         String?
 
   hojasRuta HojaRuta[]
   usuario   Usuario?
 }
 
 model Camion {
-  id              Int            @id @default(autoincrement())
-  patente         String         @unique
-  transportistaId Int?
-  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
-  activo          Boolean        @default(true)
+  id                Int            @id @default(autoincrement())
+  patente           String         @unique
+  transportistaId   Int?
+  transportista     Transportista? @relation(fields: [transportistaId], references: [id])
+  activo            Boolean        @default(true)
+  marca             String?
+  modelo            String?
+  anio              Int?
+  vencimientoVtv    DateTime?
+  companiaSeguro    String?
+  numeroPoliza      String?
+  vencimientoSeguro DateTime?
+  tipo              TipoCamion?
+  // Solo aplica si tipo = CHASIS
+  capacidadPallets  Int?
 
   hojasRuta HojaRuta[]
 }
 
 model Acoplado {
-  id              Int            @id @default(autoincrement())
-  patente         String         @unique
-  transportistaId Int?
-  transportista   Transportista? @relation(fields: [transportistaId], references: [id])
-  activo          Boolean        @default(true)
+  id                Int            @id @default(autoincrement())
+  patente           String         @unique
+  transportistaId   Int?
+  transportista     Transportista? @relation(fields: [transportistaId], references: [id])
+  activo            Boolean        @default(true)
+  marca             String?
+  modelo            String?
+  anio              Int?
+  vencimientoVtv    DateTime?
+  companiaSeguro    String?
+  numeroPoliza      String?
+  vencimientoSeguro DateTime?
+  capacidadPallets  Int?
 
   hojasRuta HojaRuta[]
 }
@@ -99,6 +143,11 @@ model Cliente {
   id          Int        @id @default(autoincrement())
   razonSocial String
   activo      Boolean    @default(true)
+  cuit         String?
+  domicilio    String?
+  codigoPostal String?
+  localidad    String?
+  provincia    String?
 
   sucursales  Sucursal[]
   detalles    HojaRutaDetalle[]
@@ -111,6 +160,15 @@ model Sucursal {
   nombre    String
   domicilio String
   activo    Boolean @default(true)
+  denominacion   String?
+  numeroSucursal String?
+  codigoPostal   String?
+  localidad      String?
+  provincia      String?
+  contacto       String?
+  horario        String?
+  observaciones  String?
+  notas          String?
 
   detalles HojaRutaDetalle[]
 }

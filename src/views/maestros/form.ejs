@@ -1,12 +1,21 @@
+<%
+function toDateInputValue(v) {
+  if (!v) return '';
+  const d = new Date(v);
+  if (isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+%>
 <div class="row justify-content-center">
-  <div class="col-md-6">
+  <div class="col-md-7">
     <h4 class="mb-3"><%= title %></h4>
     <% if (error) { %>
       <div class="alert alert-danger"><%= error %></div>
     <% } %>
     <form method="post" action="<%= item && item.id ? `/maestros/${key}/${item.id}` : `/maestros/${key}` %>" class="card card-body">
       <% cfg.fields.forEach(function(f) { %>
-        <div class="mb-3 campo-condicional" <% if (f.showOnlyIfFieldEquals) { %>data-depende-de="<%= f.showOnlyIfFieldEquals.field %>" data-valor-esperado="<%= f.showOnlyIfFieldEquals.value %>"<% } %>>
+        <div class="mb-3 campo-condicional"
+          <% if (f.conditional) { %>data-cond-type="<%= f.conditional.type %>" data-cond-field="<%= f.conditional.field %>" data-cond-value="<%= f.conditional.value %>"<% } %>>
           <% if (f.type === 'checkbox') { %>
             <div class="form-check">
               <input class="form-check-input" type="checkbox" name="<%= f.name %>" id="f_<%= f.name %>"
@@ -24,10 +33,40 @@
                 <option value="<%= o.value %>" <%= selected ? 'selected' : '' %>><%= o.label %></option>
               <% }); %>
             </select>
+          <% } else if (f.type === 'radio') { %>
+            <label class="form-label d-block"><%= f.label %></label>
+            <% f.options.forEach(function(o) { %>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="<%= f.name %>" id="f_<%= f.name %>_<%= o.value %>"
+                  value="<%= o.value %>" <%= item && String(item[f.name]) === String(o.value) ? 'checked' : '' %>>
+                <label class="form-check-label" for="f_<%= f.name %>_<%= o.value %>"><%= o.label %></label>
+              </div>
+            <% }); %>
+          <% } else if (f.type === 'multicheckbox') { %>
+            <label class="form-label d-block"><%= f.label %></label>
+            <% const seleccionados = (item && item[f.name]) || []; %>
+            <% f.options.forEach(function(o) { %>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" name="<%= f.name %>" id="f_<%= f.name %>_<%= o.value %>"
+                  value="<%= o.value %>" <%= seleccionados.includes(o.value) ? 'checked' : '' %>>
+                <label class="form-check-label" for="f_<%= f.name %>_<%= o.value %>"><%= o.label %></label>
+              </div>
+            <% }); %>
           <% } else if (f.type === 'password') { %>
             <label class="form-label" for="f_<%= f.name %>"><%= f.label %><% if (item && item.id) { %> (dejar en blanco para no cambiar)<% } %></label>
             <input type="password" class="form-control" name="<%= f.name %>" id="f_<%= f.name %>"
               <%= (f.required === true || (f.required === 'create-only' && !(item && item.id))) ? 'required' : '' %>>
+          <% } else if (f.type === 'textarea') { %>
+            <label class="form-label" for="f_<%= f.name %>"><%= f.label %></label>
+            <textarea class="form-control" name="<%= f.name %>" id="f_<%= f.name %>" rows="3"><%= item && item[f.name] != null ? item[f.name] : '' %></textarea>
+          <% } else if (f.type === 'date') { %>
+            <label class="form-label" for="f_<%= f.name %>"><%= f.label %></label>
+            <input type="date" class="form-control" name="<%= f.name %>" id="f_<%= f.name %>"
+              value="<%= toDateInputValue(item && item[f.name]) %>" <%= f.required ? 'required' : '' %>>
+          <% } else if (f.type === 'number') { %>
+            <label class="form-label" for="f_<%= f.name %>"><%= f.label %></label>
+            <input type="number" class="form-control" name="<%= f.name %>" id="f_<%= f.name %>"
+              value="<%= item && item[f.name] != null ? item[f.name] : '' %>" <%= f.required ? 'required' : '' %>>
           <% } else { %>
             <label class="form-label" for="f_<%= f.name %>"><%= f.label %></label>
             <input type="text" class="form-control" name="<%= f.name %>" id="f_<%= f.name %>"
@@ -46,17 +85,45 @@
 
 <script>
   (function () {
-    document.querySelectorAll('.campo-condicional[data-depende-de]').forEach(function (campo) {
-      const depende = campo.dataset.dependeDe;
-      const esperado = campo.dataset.valorEsperado;
-      const control = document.getElementById('f_' + depende);
-      if (!control) return;
-      function actualizar() {
-        campo.style.display = control.value === esperado ? '' : 'none';
+    const form = document.querySelector('form');
+    if (!form) return;
+
+    function getSingleValue(field) {
+      const radios = form.querySelectorAll('input[type="radio"][name="' + field + '"]');
+      if (radios.length) {
+        const checked = form.querySelector('input[type="radio"][name="' + field + '"]:checked');
+        return checked ? checked.value : '';
       }
-      control.addEventListener('change', actualizar);
-      actualizar();
-    });
+      const el = document.getElementById('f_' + field);
+      if (!el) return '';
+      if (el.type === 'checkbox') return el.checked;
+      return el.value;
+    }
+
+    function getMultiValues(field) {
+      return Array.from(form.querySelectorAll('input[type="checkbox"][name="' + field + '"]:checked')).map(function (el) {
+        return el.value;
+      });
+    }
+
+    function evaluar() {
+      form.querySelectorAll('.campo-condicional[data-cond-type]').forEach(function (campo) {
+        const type = campo.dataset.condType;
+        const field = campo.dataset.condField;
+        const esperado = campo.dataset.condValue;
+        let visible = true;
+        if (type === 'equals') {
+          visible = String(getSingleValue(field)) === String(esperado);
+        } else if (type === 'checked') {
+          visible = getSingleValue(field) === true;
+        } else if (type === 'includes') {
+          visible = getMultiValues(field).indexOf(esperado) !== -1;
+        }
+        campo.style.display = visible ? '' : 'none';
+      });
+    }
+
+    form.addEventListener('change', evaluar);
+    evaluar();
   })();
 </script>
-

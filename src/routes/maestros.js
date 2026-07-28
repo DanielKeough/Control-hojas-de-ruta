@@ -6,6 +6,16 @@ const { requireRole } = require('../middleware/auth');
 const router = express.Router();
 router.use(requireRole('ADMINISTRACION'));
 
+const CATEGORIAS_CONDUCTOR = [
+  { value: 'C', label: 'C' },
+  { value: 'D1', label: 'D1' },
+  { value: 'D2', label: 'D2' },
+  { value: 'D3', label: 'D3' },
+  { value: 'D4', label: 'D4' },
+  { value: 'E', label: 'E' },
+  { value: 'OTRA', label: 'Otra (detallar)' },
+];
+
 // Config declarativa de cada tabla maestra: modelo de Prisma, campos del formulario
 // y de donde salen las opciones de los combos (select).
 const CONFIG = {
@@ -13,9 +23,15 @@ const CONFIG = {
     model: 'transportista',
     singular: 'Transportista',
     titulo: 'Transportes',
+    listFields: ['razonSocial', 'cuit', 'localidad', 'provincia', 'controlKmHabilitado', 'activo'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
       { name: 'controlKmHabilitado', label: 'Requiere control de Km y hora por tramo', type: 'checkbox' },
+      { name: 'cuit', label: 'CUIT', type: 'text' },
+      { name: 'domicilio', label: 'Domicilio', type: 'text' },
+      { name: 'codigoPostal', label: 'Código Postal', type: 'text' },
+      { name: 'localidad', label: 'Localidad', type: 'text' },
+      { name: 'provincia', label: 'Provincia', type: 'text' },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
   },
@@ -23,31 +39,103 @@ const CONFIG = {
     model: 'conductor',
     singular: 'Conductor',
     titulo: 'Conductores',
+    listFields: ['apellido', 'nombre', 'dni', 'transportistaId', 'condicion', 'activo'],
     fields: [
       { name: 'apellido', label: 'Apellido', type: 'text', required: true },
       { name: 'nombre', label: 'Nombre', type: 'text', required: true },
       { name: 'dni', label: 'DNI', type: 'text', required: true },
       { name: 'transportistaId', label: 'Transporte', type: 'select', optionsKey: 'transportistas' },
+      { name: 'empleador', label: 'Empleador', type: 'text' },
+      {
+        name: 'condicion',
+        label: 'Condición',
+        type: 'select',
+        options: [
+          { value: 'RELACION_DEPENDENCIA', label: 'Relación de dependencia' },
+          { value: 'INDEPENDIENTE', label: 'Independiente' },
+        ],
+      },
+      { name: 'fechaNacimiento', label: 'Fecha de nacimiento', type: 'date' },
+      { name: 'seguroVidaObligatorio', label: 'Seguro de vida obligatorio', type: 'checkbox' },
+      { name: 'seguroVidaCompania', label: 'Compañía (seguro de vida)', type: 'text' },
+      { name: 'seguroAccidentesPersonales', label: 'Seguro de accidentes personales', type: 'checkbox' },
+      { name: 'seguroAccidentesCompania', label: 'Compañía (accidentes personales)', type: 'text' },
+      { name: 'registroConducirNumero', label: 'Número de registro de conducir', type: 'text' },
+      { name: 'registroConducirVencimiento', label: 'Vencimiento de registro', type: 'date' },
+      {
+        name: 'categoriasHabilitantes',
+        label: 'Categorías habilitantes',
+        type: 'multicheckbox',
+        options: CATEGORIAS_CONDUCTOR,
+      },
+      {
+        name: 'categoriaOtraDetalle',
+        label: 'Detalle de la categoría "Otra"',
+        type: 'text',
+        conditional: { type: 'includes', field: 'categoriasHabilitantes', value: 'OTRA' },
+      },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
+    postCoerce(data) {
+      if (!data.categoriasHabilitantes || !data.categoriasHabilitantes.includes('OTRA')) {
+        data.categoriaOtraDetalle = null;
+      }
+      return data;
+    },
   },
   camiones: {
     model: 'camion',
     singular: 'Camión',
     titulo: 'Camiones',
+    listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'tipo', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
       { name: 'transportistaId', label: 'Transporte', type: 'select', optionsKey: 'transportistas' },
+      { name: 'marca', label: 'Marca', type: 'text' },
+      { name: 'modelo', label: 'Modelo', type: 'text' },
+      { name: 'anio', label: 'Año', type: 'number' },
+      { name: 'vencimientoVtv', label: 'Vencimiento VTV', type: 'date' },
+      { name: 'companiaSeguro', label: 'Compañía de Seguro', type: 'text' },
+      { name: 'numeroPoliza', label: 'Número de Póliza', type: 'text' },
+      { name: 'vencimientoSeguro', label: 'Vencimiento Seguro', type: 'date' },
+      {
+        name: 'tipo',
+        label: 'Tractor o Chasis',
+        type: 'radio',
+        options: [
+          { value: 'TRACTOR', label: 'Tractor' },
+          { value: 'CHASIS', label: 'Chasis' },
+        ],
+      },
+      {
+        name: 'capacidadPallets',
+        label: 'Capacidad de pallets',
+        type: 'number',
+        conditional: { type: 'equals', field: 'tipo', value: 'CHASIS' },
+      },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
+    postCoerce(data) {
+      if (data.tipo !== 'CHASIS') data.capacidadPallets = null;
+      return data;
+    },
   },
   acoplados: {
     model: 'acoplado',
     singular: 'Acoplado',
     titulo: 'Acoplados',
+    listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'capacidadPallets', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
       { name: 'transportistaId', label: 'Transporte', type: 'select', optionsKey: 'transportistas' },
+      { name: 'marca', label: 'Marca', type: 'text' },
+      { name: 'modelo', label: 'Modelo', type: 'text' },
+      { name: 'anio', label: 'Año', type: 'number' },
+      { name: 'vencimientoVtv', label: 'Vencimiento VTV', type: 'date' },
+      { name: 'companiaSeguro', label: 'Compañía de Seguro', type: 'text' },
+      { name: 'numeroPoliza', label: 'Número de Póliza', type: 'text' },
+      { name: 'vencimientoSeguro', label: 'Vencimiento Seguro', type: 'date' },
+      { name: 'capacidadPallets', label: 'Capacidad de pallets', type: 'number' },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
   },
@@ -57,6 +145,11 @@ const CONFIG = {
     titulo: 'Clientes',
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
+      { name: 'cuit', label: 'CUIT', type: 'text' },
+      { name: 'domicilio', label: 'Domicilio', type: 'text' },
+      { name: 'codigoPostal', label: 'Código Postal', type: 'text' },
+      { name: 'localidad', label: 'Localidad', type: 'text' },
+      { name: 'provincia', label: 'Provincia', type: 'text' },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
   },
@@ -64,10 +157,20 @@ const CONFIG = {
     model: 'sucursal',
     singular: 'Sucursal',
     titulo: 'Sucursales',
+    listFields: ['clienteId', 'nombre', 'numeroSucursal', 'domicilio', 'localidad', 'activo'],
     fields: [
       { name: 'clienteId', label: 'Cliente', type: 'select', optionsKey: 'clientes', required: true },
       { name: 'nombre', label: 'Nombre de Sucursal', type: 'text', required: true },
-      { name: 'domicilio', label: 'Domicilio de entrega', type: 'text', required: true },
+      { name: 'denominacion', label: 'Denominación', type: 'text' },
+      { name: 'numeroSucursal', label: 'Número de Sucursal', type: 'text' },
+      { name: 'domicilio', label: 'Domicilio', type: 'text', required: true },
+      { name: 'codigoPostal', label: 'Código Postal', type: 'text' },
+      { name: 'localidad', label: 'Localidad', type: 'text' },
+      { name: 'provincia', label: 'Provincia', type: 'text' },
+      { name: 'contacto', label: 'Contacto', type: 'text' },
+      { name: 'horario', label: 'Horario', type: 'text' },
+      { name: 'observaciones', label: 'Observaciones', type: 'textarea' },
+      { name: 'notas', label: 'Notas', type: 'textarea' },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
   },
@@ -96,10 +199,18 @@ const CONFIG = {
         label: 'Conductor vinculado (solo si el rol es Conductor)',
         type: 'select',
         optionsKey: 'conductores',
-        showOnlyIfFieldEquals: { field: 'rol', value: 'CONDUCTOR' },
+        conditional: { type: 'equals', field: 'rol', value: 'CONDUCTOR' },
       },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
+    postCoerce(data) {
+      if (data.rol !== 'CONDUCTOR') {
+        data.conductorId = null;
+      } else if (!data.conductorId) {
+        throw new Error('Elegí el conductor vinculado a este usuario (rol Conductor).');
+      }
+      return data;
+    },
   },
 };
 
@@ -136,8 +247,14 @@ async function loadOptions(cfg) {
   return optionsMap;
 }
 
+function toNullableDate(v) {
+  if (v === undefined || v === null || v === '') return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 function coerceBody(cfg, body) {
-  const data = {};
+  let data = {};
   for (const field of cfg.fields) {
     if (field.name === 'password') continue; // se maneja aparte (hash)
     let value = body[field.name];
@@ -145,17 +262,18 @@ function coerceBody(cfg, body) {
       data[field.name] = value === 'on' || value === 'true';
     } else if (field.type === 'select' && field.optionsKey) {
       data[field.name] = value ? Number(value) : null;
+    } else if (field.type === 'number') {
+      data[field.name] = value === '' || value === undefined || value === null ? null : parseInt(value, 10);
+    } else if (field.type === 'date') {
+      data[field.name] = toNullableDate(value);
+    } else if (field.type === 'multicheckbox') {
+      data[field.name] = value ? (Array.isArray(value) ? value : [value]) : [];
     } else {
-      data[field.name] = value === '' ? null : value;
+      data[field.name] = value === '' || value === undefined ? null : value;
     }
   }
-  // El conductor vinculado solo tiene sentido si el rol del usuario es CONDUCTOR
-  if ('conductorId' in data) {
-    if (data.rol !== 'CONDUCTOR') {
-      data.conductorId = null;
-    } else if (!data.conductorId) {
-      throw new Error('Elegí el conductor vinculado a este usuario (rol Conductor).');
-    }
+  if (typeof cfg.postCoerce === 'function') {
+    data = cfg.postCoerce(data) || data;
   }
   return data;
 }
@@ -164,7 +282,10 @@ router.get('/:key', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const items = await prisma[cfg.model].findMany({ orderBy: { id: 'desc' } });
   const optionsMap = await loadOptions(cfg);
-  res.render('maestros/lista', { title: cfg.titulo, key: req.maestroKey, cfg, items, optionsMap, LABEL_FIELD });
+  const displayFields = cfg.listFields
+    ? cfg.fields.filter((f) => cfg.listFields.includes(f.name))
+    : cfg.fields.filter((f) => f.name !== 'password');
+  res.render('maestros/lista', { title: cfg.titulo, key: req.maestroKey, cfg, items, optionsMap, displayFields });
 });
 
 router.get('/:key/nuevo', getConfig, async (req, res) => {
