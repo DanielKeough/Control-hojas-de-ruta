@@ -1,0 +1,40 @@
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0"><%= cfg.singular %> #<%= item.id %></h4>
+  <div class="d-flex gap-2">
+    <a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-primary btn-sm">
+      <i class="bi bi-pencil"></i> Editar
+    </a>
+    <a href="/maestros/<%= key %>" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <dl class="row mb-0">
+      <% displayFields.forEach(function(f) { %>
+        <dt class="col-sm-4 col-lg-3"><%= f.label %></dt>
+        <dd class="col-sm-8 col-lg-9">
+          <% if (f.type === 'checkbox') { %>
+            <%= item[f.name] ? 'Sí' : 'No' %>
+          <% } else if (f.type === 'select' && f.optionsKey) { %>
+            <% const opt = (optionsMap[f.name] || []).find(o => o.value === item[f.name]); %>
+            <%= opt ? opt.label : '-' %>
+          <% } else if ((f.type === 'select' || f.type === 'radio') && f.options) { %>
+            <% const opt = f.options.find(o => o.value === item[f.name]); %>
+            <%= opt ? opt.label : (item[f.name] || '-') %>
+          <% } else if (f.type === 'multicheckbox') { %>
+            <% const valores = item[f.name] || []; %>
+            <% const labels = f.options.filter(o => valores.includes(o.value)).map(o => o.label); %>
+            <%= labels.length ? labels.join(', ') : '-' %>
+          <% } else if (f.type === 'date') { %>
+            <%= item[f.name] ? new Date(item[f.name]).toLocaleDateString('es-AR') : '-' %>
+          <% } else if (f.type === 'textarea') { %>
+            <%= item[f.name] || '-' %>
+          <% } else { %>
+            <%= item[f.name] != null && item[f.name] !== '' ? item[f.name] : '-' %>
+          <% } %>
+        </dd>
+      <% }); %>
+    </dl>
+  </div>
+</div>

@@ -3,6 +3,10 @@
   <a href="/maestros/<%= key %>/nuevo" class="btn btn-primary btn-sm">+ Nuevo <%= cfg.singular %></a>
 </div>
 
+<% if (typeof error !== 'undefined' && error) { %>
+  <div class="alert alert-danger"><%= error %></div>
+<% } %>
+
 <table class="table table-sm table-striped bg-white">
   <thead>
     <tr>
@@ -10,7 +14,7 @@
       <% displayFields.forEach(function(f) { %>
         <th><%= f.label %></th>
       <% }); %>
-      <th></th>
+      <th class="text-end">Acciones</th>
     </tr>
   </thead>
   <tbody>
@@ -38,7 +42,22 @@
             <% } %>
           </td>
         <% }); %>
-        <td><a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-secondary btn-sm">Editar</a></td>
+        <td class="text-end text-nowrap">
+          <a href="/maestros/<%= key %>/<%= item.id %>" class="btn btn-outline-secondary btn-sm" title="Ver detalle">
+            <i class="bi bi-eye"></i>
+          </a>
+          <a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-primary btn-sm" title="Editar">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <% if (user.rol === 'ADMINISTRACION') { %>
+            <form action="/maestros/<%= key %>/<%= item.id %>/eliminar" method="post" class="d-inline"
+              onsubmit="return confirm('¿Eliminar este registro? Esta acción no se puede deshacer.');">
+              <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          <% } %>
+        </td>
       </tr>
     <% }); %>
     <% if (items.length === 0) { %>

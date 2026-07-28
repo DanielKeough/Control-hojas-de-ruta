@@ -278,20 +278,32 @@ function coerceBody(cfg, body) {
   return data;
 }
 
-router.get('/:key', getConfig, async (req, res) => {
-  const cfg = req.maestroConfig;
+async function renderLista(req, res, cfg, error) {
   const items = await prisma[cfg.model].findMany({ orderBy: { id: 'desc' } });
   const optionsMap = await loadOptions(cfg);
   const displayFields = cfg.listFields
     ? cfg.fields.filter((f) => cfg.listFields.includes(f.name))
     : cfg.fields.filter((f) => f.name !== 'password');
-  res.render('maestros/lista', { title: cfg.titulo, key: req.maestroKey, cfg, items, optionsMap, displayFields });
+  res.render('maestros/lista', { title: cfg.titulo, key: req.maestroKey, cfg, items, optionsMap, displayFields, error: error || null });
+}
+
+router.get('/:key', getConfig, async (req, res) => {
+  await renderLista(req, res, req.maestroConfig, null);
 });
 
 router.get('/:key/nuevo', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const optionsMap = await loadOptions(cfg);
   res.render('maestros/form', { title: `Nuevo ${cfg.singular}`, key: req.maestroKey, cfg, item: null, optionsMap, error: null });
+});
+
+router.get('/:key/:id', getConfig, async (req, res) => {
+  const cfg = req.maestroConfig;
+  const item = await prisma[cfg.model].findUnique({ where: { id: Number(req.params.id) } });
+  if (!item) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Registro inexistente.' });
+  const optionsMap = await loadOptions(cfg);
+  const displayFields = cfg.fields.filter((f) => f.name !== 'password');
+  res.render('maestros/ver', { title: `${cfg.singular} #${item.id}`, key: req.maestroKey, cfg, item, optionsMap, displayFields });
 });
 
 router.post('/:key', getConfig, async (req, res) => {
@@ -345,6 +357,24 @@ router.post('/:key/:id', getConfig, async (req, res) => {
       optionsMap,
       error: err.code === 'P2002' ? 'Ya existe un registro con ese valor único (duplicado).' : err.message,
     });
+  }
+});
+
+// Eliminar un registro. Toda la ruta /maestros ya exige rol ADMINISTRACION
+// (ver el router.use al inicio del archivo), asi que solo Administracion
+// puede llegar hasta aca.
+router.post('/:key/:id/eliminar', getConfig, async (req, res) => {
+  const cfg = req.maestroConfig;
+  const id = Number(req.params.id);
+  try {
+    await prisma[cfg.model].delete({ where: { id } });
+    res.redirect(`/maestros/${req.maestroKey}`);
+  } catch (err) {
+    const mensaje =
+      err.code === 'P2003' || err.code === 'P2014'
+        ? 'No se puede eliminar: este registro está siendo utilizado por otros datos (por ejemplo, hojas de ruta). Podés desactivarlo con la casilla "Activo" en su lugar.'
+        : 'No se pudo eliminar el registro.';
+    await renderLista(req, res, cfg, mensaje);
   }
 });
 
