@@ -13,6 +13,20 @@
     <% if (user.rol === 'ADMINISTRACION') { %>
       <a href="/facturacion/<%= hoja.id %>" class="btn btn-outline-success btn-sm">Imputación Factura</a>
     <% } %>
+    <%
+      const printUrl = `${baseUrl}/hojas-ruta/${hoja.id}/imprimir`;
+      const shareText = `Hoja de Ruta HR-${String(hoja.id).padStart(6,'0')} - ${hoja.transportista.razonSocial} - Camión ${hoja.camion.patente}\n${printUrl}`;
+      const shareSubject = `Hoja de Ruta HR-${String(hoja.id).padStart(6,'0')}`;
+    %>
+    <a href="<%= printUrl %>" target="_blank" class="btn btn-outline-dark btn-sm" title="Imprimir hoja de ruta">
+      <i class="bi bi-printer"></i>
+    </a>
+    <a href="https://wa.me/?text=<%- encodeURIComponent(shareText) %>" target="_blank" class="btn btn-success btn-sm" title="Enviar por WhatsApp">
+      <i class="bi bi-whatsapp"></i>
+    </a>
+    <a href="mailto:?subject=<%- encodeURIComponent(shareSubject) %>&body=<%- encodeURIComponent(shareText) %>" class="btn btn-outline-secondary btn-sm" title="Enviar por correo">
+      <i class="bi bi-envelope-fill"></i>
+    </a>
   </div>
 </div>
 

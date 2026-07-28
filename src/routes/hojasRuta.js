@@ -119,7 +119,14 @@ router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) =>
 router.get('/:id', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  res.render('hojas-ruta/ver', { title: `Hoja de Ruta #${hoja.id}`, hoja });
+  const baseUrl = `${req.protocol}://${req.get('host')}`;
+  res.render('hojas-ruta/ver', { title: `Hoja de Ruta #${hoja.id}`, hoja, baseUrl });
+});
+
+router.get('/:id/imprimir', async (req, res) => {
+  const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
+  if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
+  res.render('hojas-ruta/imprimir', { title: `Imprimir Hoja de Ruta #${hoja.id}`, hoja, layout: false });
 });
 
 router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) => {
