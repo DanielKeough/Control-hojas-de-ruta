@@ -12,6 +12,7 @@ enum Rol {
   PORTERIA
   ADMINISTRACION
   CONDUCTOR
+  SUPERUSUARIO
 }
 
 enum EstadoHojaRuta {

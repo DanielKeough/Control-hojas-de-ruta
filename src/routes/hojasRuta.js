@@ -93,12 +93,12 @@ router.get('/', async (req, res) => {
   res.render('hojas-ruta/lista', { title: 'Hojas de Ruta', hojas, numero: numero || '' });
 });
 
-router.get('/nueva', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) => {
+router.get('/nueva', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
   res.render('hojas-ruta/form', { title: 'Nueva Hoja de Ruta', hoja: null, ...formData, error: null });
 });
 
-router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) => {
+router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
   try {
     const body = req.body;
@@ -140,7 +140,7 @@ router.get('/:id/imprimir', async (req, res) => {
   res.render('hojas-ruta/imprimir', { title: `Imprimir Hoja de Ruta #${hoja.id}`, hoja, layout: false });
 });
 
-router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) => {
+router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
   if (hoja.estado !== 'ABIERTA') {
@@ -153,7 +153,7 @@ router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req
   res.render('hojas-ruta/form', { title: `Editar Hoja de Ruta #${hoja.id}`, hoja, ...formData, error: null });
 });
 
-router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) => {
+router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const id = Number(req.params.id);
   const formData = await loadFormData();
   try {

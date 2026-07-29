@@ -17,16 +17,17 @@ async function main() {
         username: adminUsername,
         passwordHash,
         nombre: adminNombre,
-        rol: 'ADMINISTRACION',
+        rol: 'SUPERUSUARIO',
       },
     });
-    console.log(`Usuario administrador creado: ${adminUsername} / ${adminPassword}`);
+    console.log(`Usuario superusuario creado: ${adminUsername} / ${adminPassword}`);
   } else {
-    console.log('El usuario administrador ya existe, no se recrea.');
+    console.log('El usuario superusuario ya existe, no se recrea.');
   }
 
   // Usuarios de ejemplo para los otros roles (solo si no existen)
   const ejemplos = [
+    { username: 'administracion', password: 'admin123', nombre: 'Usuario Administracion', rol: 'ADMINISTRACION' },
     { username: 'logistica', password: 'logistica123', nombre: 'Usuario Logistica', rol: 'LOGISTICA' },
     { username: 'porteria', password: 'porteria123', nombre: 'Usuario Porteria', rol: 'PORTERIA' },
   ];

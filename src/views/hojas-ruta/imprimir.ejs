@@ -88,7 +88,7 @@
             <th>Recepción</th>
             <th>Kilos recibidos</th>
             <th>Entrega</th>
-            <% if (user.rol === 'ADMINISTRACION') { %><th>N° Factura</th><% } %>
+            <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
           </tr>
         </thead>
         <tbody>
@@ -101,7 +101,7 @@
               <td><%= r.recepcionEstado %></td>
               <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>
               <td><%= r.estadoEntrega %></td>
-              <% if (user.rol === 'ADMINISTRACION') { %><td><%= r.numeroFactura || '-' %></td><% } %>
+              <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><td><%= r.numeroFactura || '-' %></td><% } %>
             </tr>
           <% }); %>
         </tbody>

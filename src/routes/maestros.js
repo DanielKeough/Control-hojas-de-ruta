@@ -8,8 +8,8 @@ router.use(requireAuth);
 
 // Roles que pueden consultar / escribir (alta y modificacion) / eliminar
 // cada tabla maestra. Si una tabla no define alguno de estos arrays, se
-// asume exclusivo de ADMINISTRACION.
-const ROLES_LECTURA_DEFAULT = ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'];
+// asume exclusivo de SUPERUSUARIO.
+const ROLES_LECTURA_DEFAULT = ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'];
 
 const CATEGORIAS_CONDUCTOR = [
   { value: 'C', label: 'C' },
@@ -29,8 +29,8 @@ const CONFIG = {
     singular: 'Transportista',
     titulo: 'Transportes',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['razonSocial', 'cuit', 'localidad', 'provincia', 'controlKmHabilitado', 'activo'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
@@ -48,8 +48,8 @@ const CONFIG = {
     singular: 'Conductor',
     titulo: 'Conductores',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['apellido', 'nombre', 'dni', 'transportistaId', 'condicion', 'activo'],
     fields: [
       { name: 'apellido', label: 'Apellido', type: 'text', required: true },
@@ -99,8 +99,8 @@ const CONFIG = {
     singular: 'Camión',
     titulo: 'Camiones',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'tipo', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -139,8 +139,8 @@ const CONFIG = {
     singular: 'Acoplado',
     titulo: 'Acoplados',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'capacidadPallets', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -161,8 +161,8 @@ const CONFIG = {
     singular: 'Cliente',
     titulo: 'Clientes',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'ADMINISTRACION'],
-    deleteRoles: ['LOGISTICA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
       { name: 'cuit', label: 'CUIT', type: 'text' },
@@ -178,8 +178,8 @@ const CONFIG = {
     singular: 'Sucursal',
     titulo: 'Sucursales',
     readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'ADMINISTRACION'],
-    deleteRoles: ['LOGISTICA', 'ADMINISTRACION'],
+    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['clienteId', 'nombre', 'numeroSucursal', 'domicilio', 'localidad', 'activo'],
     fields: [
       { name: 'clienteId', label: 'Cliente', type: 'select', optionsKey: 'clientes', required: true },
@@ -201,6 +201,11 @@ const CONFIG = {
     model: 'usuario',
     singular: 'Usuario',
     titulo: 'Usuarios del sistema',
+    // Exclusivo de SUPERUSUARIO: ni siquiera Administracion puede ver o
+    // modificar esta tabla.
+    readRoles: ['SUPERUSUARIO'],
+    writeRoles: ['SUPERUSUARIO'],
+    deleteRoles: ['SUPERUSUARIO'],
     fields: [
       { name: 'username', label: 'Usuario', type: 'text', required: true },
       { name: 'password', label: 'Contraseña', type: 'password', required: 'create-only' },
@@ -214,6 +219,7 @@ const CONFIG = {
           { value: 'PORTERIA', label: 'Portería' },
           { value: 'ADMINISTRACION', label: 'Administración' },
           { value: 'CONDUCTOR', label: 'Conductor' },
+          { value: 'SUPERUSUARIO', label: 'Superusuario' },
         ],
         required: true,
       },
@@ -257,13 +263,13 @@ function getConfig(req, res, next) {
 }
 
 function puedeLeer(cfg, rol) {
-  return (cfg.readRoles || ['ADMINISTRACION']).includes(rol);
+  return (cfg.readRoles || ['SUPERUSUARIO']).includes(rol);
 }
 function puedeEscribir(cfg, rol) {
-  return (cfg.writeRoles || ['ADMINISTRACION']).includes(rol);
+  return (cfg.writeRoles || ['SUPERUSUARIO']).includes(rol);
 }
 function puedeEliminar(cfg, rol) {
-  return (cfg.deleteRoles || ['ADMINISTRACION']).includes(rol);
+  return (cfg.deleteRoles || ['SUPERUSUARIO']).includes(rol);
 }
 
 function requireLectura(req, res, next) {

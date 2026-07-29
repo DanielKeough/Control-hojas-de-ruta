@@ -4,13 +4,13 @@
     <span class="badge bg-<%= badge %>"><%= hoja.estado %></span>
   </h4>
   <div class="d-flex gap-2">
-    <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol) && hoja.estado === 'ABIERTA') { %>
+    <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol) && hoja.estado === 'ABIERTA') { %>
       <a href="/hojas-ruta/<%= hoja.id %>/editar" class="btn btn-outline-secondary btn-sm">Editar</a>
     <% } %>
-    <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
+    <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
       <a href="/control/<%= hoja.id %>" class="btn btn-outline-info btn-sm">Control y Cierre</a>
     <% } %>
-    <% if (user.rol === 'ADMINISTRACION') { %>
+    <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
       <a href="/facturacion/<%= hoja.id %>" class="btn btn-outline-success btn-sm">Imputación Factura</a>
     <% } %>
     <%
@@ -84,7 +84,7 @@
             <th>Remito</th><th>Kilos desp.</th><th>Pallets desp.</th><th>IFCOs desp.</th><th>Remito IFCO</th>
             <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib./rech.</th>
             <th>Entrega</th>
-            <% if (user.rol === 'ADMINISTRACION') { %><th>N° Factura</th><% } %>
+            <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
           </tr>
         </thead>
         <tbody>
@@ -107,7 +107,7 @@
                 <% const entBadge = { PENDIENTE: 'secondary', ENTREGADO: 'success', RECHAZADO: 'danger' }[r.estadoEntrega]; %>
                 <span class="badge bg-<%= entBadge %>"><%= r.estadoEntrega %></span>
               </td>
-              <% if (user.rol === 'ADMINISTRACION') { %><td><%= r.numeroFactura || '-' %></td><% } %>
+              <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><td><%= r.numeroFactura || '-' %></td><% } %>
             </tr>
           <% }); %>
         </tbody>

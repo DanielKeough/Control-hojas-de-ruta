@@ -18,22 +18,22 @@
       </button>
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto">
-          <% if (['LOGISTICA','PORTERIA','CONDUCTOR','ADMINISTRACION'].includes(user.rol)) { %>
+          <% if (['LOGISTICA','PORTERIA','CONDUCTOR','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/hojas-ruta">Hojas de Ruta</a></li>
           <% } %>
-          <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
+          <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/hojas-ruta/nueva">Nueva Hoja de Ruta</a></li>
           <% } %>
-          <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
+          <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/control">Control y Cierre</a></li>
           <% } %>
           <% if (user.rol === 'CONDUCTOR') { %>
             <li class="nav-item"><a class="nav-link" href="/mis-viajes">Mis Viajes</a></li>
           <% } %>
-          <% if (user.rol === 'ADMINISTRACION') { %>
+          <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/facturacion">Imputacion Factura</a></li>
           <% } %>
-          <% if (['LOGISTICA','PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
+          <% if (['LOGISTICA','PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Maestros</a>
               <ul class="dropdown-menu">
@@ -43,7 +43,8 @@
                 <li><a class="dropdown-item" href="/maestros/acoplados">Acoplados</a></li>
                 <li><a class="dropdown-item" href="/maestros/clientes">Clientes</a></li>
                 <li><a class="dropdown-item" href="/maestros/sucursales">Sucursales</a></li>
-                <% if (user.rol === 'ADMINISTRACION') { %>
+                <% if (user.rol === 'SUPERUSUARIO') { %>
+                  <li><hr class="dropdown-divider"></li>
                   <li><a class="dropdown-item" href="/maestros/usuarios">Usuarios</a></li>
                 <% } %>
               </ul>

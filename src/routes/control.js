@@ -3,7 +3,7 @@ const prisma = require('../db');
 const { requireRole } = require('../middleware/auth');
 
 const router = express.Router();
-router.use(requireRole('PORTERIA', 'ADMINISTRACION'));
+router.use(requireRole('PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'));
 
 function toNullableFloat(v) {
   if (v === undefined || v === null || v === '') return null;
