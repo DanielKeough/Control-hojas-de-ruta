@@ -52,7 +52,11 @@ router.post('/:id', async (req, res) => {
     await prisma.$transaction(async (tx) => {
       await tx.hojaRuta.update({
         where: { id },
-        data: { ticketPesadaBalanza: req.body.ticketPesadaBalanza || null },
+        data: {
+          ticketPesadaBalanza: req.body.ticketPesadaBalanza || null,
+          tara: toNullableFloat(req.body.tara),
+          pesoBruto: toNullableFloat(req.body.pesoBruto),
+        },
       });
       for (const [remitoKey, r] of Object.entries(remitosBody)) {
         await tx.remito.update({

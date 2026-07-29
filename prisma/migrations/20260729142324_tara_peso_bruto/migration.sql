@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "HojaRuta" ADD COLUMN     "pesoBruto" DOUBLE PRECISION,
+ADD COLUMN     "tara" DOUBLE PRECISION;
+

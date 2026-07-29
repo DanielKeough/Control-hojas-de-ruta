@@ -18,8 +18,10 @@
       </button>
       <div class="collapse navbar-collapse" id="nav">
         <ul class="navbar-nav me-auto">
-          <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
+          <% if (['LOGISTICA','PORTERIA','CONDUCTOR','ADMINISTRACION'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/hojas-ruta">Hojas de Ruta</a></li>
+          <% } %>
+          <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/hojas-ruta/nueva">Nueva Hoja de Ruta</a></li>
           <% } %>
           <% if (['PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
@@ -30,6 +32,8 @@
           <% } %>
           <% if (user.rol === 'ADMINISTRACION') { %>
             <li class="nav-item"><a class="nav-link" href="/facturacion">Imputacion Factura</a></li>
+          <% } %>
+          <% if (['LOGISTICA','PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Maestros</a>
               <ul class="dropdown-menu">
@@ -39,7 +43,9 @@
                 <li><a class="dropdown-item" href="/maestros/acoplados">Acoplados</a></li>
                 <li><a class="dropdown-item" href="/maestros/clientes">Clientes</a></li>
                 <li><a class="dropdown-item" href="/maestros/sucursales">Sucursales</a></li>
-                <li><a class="dropdown-item" href="/maestros/usuarios">Usuarios</a></li>
+                <% if (user.rol === 'ADMINISTRACION') { %>
+                  <li><a class="dropdown-item" href="/maestros/usuarios">Usuarios</a></li>
+                <% } %>
               </ul>
             </li>
           <% } %>

@@ -1,13 +1,17 @@
 <h4 class="mb-4">Bienvenido, <%= user.nombre %></h4>
 
 <div class="row g-3">
-  <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
+  <% if (['LOGISTICA','PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
     <div class="col-md-4">
       <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title">Hojas de Ruta</h5>
-          <p class="card-text">Registrar una nueva hoja de ruta o consultar las existentes.</p>
-          <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Nueva Hoja de Ruta</a>
+          <p class="card-text">
+            <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>Registrar una nueva hoja de ruta o consultar las existentes.<% } else { %>Consultar las hojas de ruta existentes.<% } %>
+          </p>
+          <% if (['LOGISTICA','ADMINISTRACION'].includes(user.rol)) { %>
+            <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Nueva Hoja de Ruta</a>
+          <% } %>
           <a href="/hojas-ruta" class="btn btn-outline-secondary btn-sm">Ver listado</a>
         </div>
       </div>
@@ -51,6 +55,17 @@
           <h5 class="card-title">Tablas Maestras</h5>
           <p class="card-text">Transportes, conductores, camiones, acoplados, clientes, sucursales y usuarios.</p>
           <a href="/maestros/transportistas" class="btn btn-outline-dark btn-sm">Administrar</a>
+        </div>
+      </div>
+    </div>
+  <% } %>
+  <% if (['LOGISTICA','PORTERIA'].includes(user.rol)) { %>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">Tablas Maestras</h5>
+          <p class="card-text">Transportes, conductores, camiones, acoplados, clientes y sucursales.</p>
+          <a href="/maestros/transportistas" class="btn btn-outline-dark btn-sm">Ver / Administrar</a>
         </div>
       </div>
     </div>

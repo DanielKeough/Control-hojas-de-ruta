@@ -81,6 +81,9 @@ const includeCompleto = {
 router.get('/', async (req, res) => {
   const { numero } = req.query;
   const where = numero ? { id: parseInt(numero, 10) || 0 } : {};
+  if (req.user.rol === 'CONDUCTOR') {
+    where.conductorId = req.user.conductorId || 0;
+  }
   const hojas = await prisma.hojaRuta.findMany({
     where,
     include: { transportista: true, camion: true, conductor: true },
@@ -119,6 +122,9 @@ router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) =>
 router.get('/:id', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
+  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
+  }
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   res.render('hojas-ruta/ver', { title: `Hoja de Ruta #${hoja.id}`, hoja, baseUrl });
 });
@@ -126,6 +132,9 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/imprimir', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
+  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
+  }
   res.render('hojas-ruta/imprimir', { title: `Imprimir Hoja de Ruta #${hoja.id}`, hoja, layout: false });
 });
 

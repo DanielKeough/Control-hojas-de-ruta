@@ -1,9 +1,11 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0"><%= cfg.singular %> #<%= item.id %></h4>
   <div class="d-flex gap-2">
-    <a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-primary btn-sm">
-      <i class="bi bi-pencil"></i> Editar
-    </a>
+    <% if (puedeEscribir) { %>
+      <a href="/maestros/<%= key %>/<%= item.id %>/editar" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-pencil"></i> Editar
+      </a>
+    <% } %>
     <a href="/maestros/<%= key %>" class="btn btn-outline-secondary btn-sm">Volver al listado</a>
   </div>
 </div>

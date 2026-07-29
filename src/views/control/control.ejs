@@ -16,8 +16,20 @@
 <form method="post" action="/control/<%= hoja.id %>">
   <div class="card mb-3">
     <div class="card-body">
-      <label class="form-label">Número de Ticket de pesada de balanza</label>
-      <input type="text" class="form-control" style="max-width: 300px;" name="ticketPesadaBalanza" value="<%= hoja.ticketPesadaBalanza || '' %>">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Número de Ticket de pesada de balanza</label>
+          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= hoja.ticketPesadaBalanza || '' %>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tara (kg)</label>
+          <input type="number" step="0.01" class="form-control" name="tara" value="<%= hoja.tara != null ? hoja.tara : '' %>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Peso bruto (kg)</label>
+          <input type="number" step="0.01" class="form-control" name="pesoBruto" value="<%= hoja.pesoBruto != null ? hoja.pesoBruto : '' %>">
+        </div>
+      </div>
     </div>
   </div>
 

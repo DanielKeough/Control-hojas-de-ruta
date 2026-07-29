@@ -185,6 +185,8 @@ model HojaRuta {
   conductorId         Int
   conductor           Conductor      @relation(fields: [conductorId], references: [id])
   ticketPesadaBalanza String?
+  tara                Float? // Carga Porteria
+  pesoBruto           Float? // Carga Porteria
   estado              EstadoHojaRuta @default(ABIERTA)
   usuarioCreadorId    Int
   usuarioCreador      Usuario        @relation("creador", fields: [usuarioCreadorId], references: [id])

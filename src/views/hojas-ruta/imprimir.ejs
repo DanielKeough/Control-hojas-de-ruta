@@ -59,7 +59,9 @@
       </tr>
       <tr>
         <th class="bg-light">Ticket pesada balanza</th>
-        <td colspan="3"><%= hoja.ticketPesadaBalanza || '-' %></td>
+        <td><%= hoja.ticketPesadaBalanza || '-' %></td>
+        <th class="bg-light">Tara / Peso bruto</th>
+        <td><%= hoja.tara != null ? hoja.tara + ' kg' : '-' %> / <%= hoja.pesoBruto != null ? hoja.pesoBruto + ' kg' : '-' %></td>
       </tr>
     </tbody>
   </table>
@@ -84,7 +86,7 @@
             <th>Recepción</th>
             <th>Kilos recibidos</th>
             <th>Entrega</th>
-            <th>N° Factura</th>
+            <% if (user.rol === 'ADMINISTRACION') { %><th>N° Factura</th><% } %>
           </tr>
         </thead>
         <tbody>
@@ -97,7 +99,7 @@
               <td><%= r.recepcionEstado %></td>
               <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>
               <td><%= r.estadoEntrega %></td>
-              <td><%= r.numeroFactura || '-' %></td>
+              <% if (user.rol === 'ADMINISTRACION') { %><td><%= r.numeroFactura || '-' %></td><% } %>
             </tr>
           <% }); %>
         </tbody>

@@ -1,10 +1,15 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const prisma = require('../db');
-const { requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
-router.use(requireRole('ADMINISTRACION'));
+router.use(requireAuth);
+
+// Roles que pueden consultar / escribir (alta y modificacion) / eliminar
+// cada tabla maestra. Si una tabla no define alguno de estos arrays, se
+// asume exclusivo de ADMINISTRACION.
+const ROLES_LECTURA_DEFAULT = ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'];
 
 const CATEGORIAS_CONDUCTOR = [
   { value: 'C', label: 'C' },
@@ -23,6 +28,9 @@ const CONFIG = {
     model: 'transportista',
     singular: 'Transportista',
     titulo: 'Transportes',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
     listFields: ['razonSocial', 'cuit', 'localidad', 'provincia', 'controlKmHabilitado', 'activo'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
@@ -39,6 +47,9 @@ const CONFIG = {
     model: 'conductor',
     singular: 'Conductor',
     titulo: 'Conductores',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
     listFields: ['apellido', 'nombre', 'dni', 'transportistaId', 'condicion', 'activo'],
     fields: [
       { name: 'apellido', label: 'Apellido', type: 'text', required: true },
@@ -87,6 +98,9 @@ const CONFIG = {
     model: 'camion',
     singular: 'Camión',
     titulo: 'Camiones',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'tipo', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -124,6 +138,9 @@ const CONFIG = {
     model: 'acoplado',
     singular: 'Acoplado',
     titulo: 'Acoplados',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION'],
+    deleteRoles: ['PORTERIA', 'ADMINISTRACION'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'capacidadPallets', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -143,6 +160,9 @@ const CONFIG = {
     model: 'cliente',
     singular: 'Cliente',
     titulo: 'Clientes',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'ADMINISTRACION'],
+    deleteRoles: ['LOGISTICA', 'ADMINISTRACION'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
       { name: 'cuit', label: 'CUIT', type: 'text' },
@@ -157,6 +177,9 @@ const CONFIG = {
     model: 'sucursal',
     singular: 'Sucursal',
     titulo: 'Sucursales',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'ADMINISTRACION'],
+    deleteRoles: ['LOGISTICA', 'ADMINISTRACION'],
     listFields: ['clienteId', 'nombre', 'numeroSucursal', 'domicilio', 'localidad', 'activo'],
     fields: [
       { name: 'clienteId', label: 'Cliente', type: 'select', optionsKey: 'clientes', required: true },
@@ -233,6 +256,35 @@ function getConfig(req, res, next) {
   next();
 }
 
+function puedeLeer(cfg, rol) {
+  return (cfg.readRoles || ['ADMINISTRACION']).includes(rol);
+}
+function puedeEscribir(cfg, rol) {
+  return (cfg.writeRoles || ['ADMINISTRACION']).includes(rol);
+}
+function puedeEliminar(cfg, rol) {
+  return (cfg.deleteRoles || ['ADMINISTRACION']).includes(rol);
+}
+
+function requireLectura(req, res, next) {
+  if (!puedeLeer(req.maestroConfig, req.user.rol)) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para consultar esta tabla.' });
+  }
+  next();
+}
+function requireEscritura(req, res, next) {
+  if (!puedeEscribir(req.maestroConfig, req.user.rol)) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para modificar esta tabla.' });
+  }
+  next();
+}
+function requireEliminar(req, res, next) {
+  if (!puedeEliminar(req.maestroConfig, req.user.rol)) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para eliminar registros de esta tabla.' });
+  }
+  next();
+}
+
 async function loadOptions(cfg) {
   const optionsMap = {};
   for (const field of cfg.fields) {
@@ -284,29 +336,47 @@ async function renderLista(req, res, cfg, error) {
   const displayFields = cfg.listFields
     ? cfg.fields.filter((f) => cfg.listFields.includes(f.name))
     : cfg.fields.filter((f) => f.name !== 'password');
-  res.render('maestros/lista', { title: cfg.titulo, key: req.maestroKey, cfg, items, optionsMap, displayFields, error: error || null });
+  res.render('maestros/lista', {
+    title: cfg.titulo,
+    key: req.maestroKey,
+    cfg,
+    items,
+    optionsMap,
+    displayFields,
+    error: error || null,
+    puedeEscribir: puedeEscribir(cfg, req.user.rol),
+    puedeEliminar: puedeEliminar(cfg, req.user.rol),
+  });
 }
 
-router.get('/:key', getConfig, async (req, res) => {
+router.get('/:key', getConfig, requireLectura, async (req, res) => {
   await renderLista(req, res, req.maestroConfig, null);
 });
 
-router.get('/:key/nuevo', getConfig, async (req, res) => {
+router.get('/:key/nuevo', getConfig, requireEscritura, async (req, res) => {
   const cfg = req.maestroConfig;
   const optionsMap = await loadOptions(cfg);
   res.render('maestros/form', { title: `Nuevo ${cfg.singular}`, key: req.maestroKey, cfg, item: null, optionsMap, error: null });
 });
 
-router.get('/:key/:id', getConfig, async (req, res) => {
+router.get('/:key/:id', getConfig, requireLectura, async (req, res) => {
   const cfg = req.maestroConfig;
   const item = await prisma[cfg.model].findUnique({ where: { id: Number(req.params.id) } });
   if (!item) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Registro inexistente.' });
   const optionsMap = await loadOptions(cfg);
   const displayFields = cfg.fields.filter((f) => f.name !== 'password');
-  res.render('maestros/ver', { title: `${cfg.singular} #${item.id}`, key: req.maestroKey, cfg, item, optionsMap, displayFields });
+  res.render('maestros/ver', {
+    title: `${cfg.singular} #${item.id}`,
+    key: req.maestroKey,
+    cfg,
+    item,
+    optionsMap,
+    displayFields,
+    puedeEscribir: puedeEscribir(cfg, req.user.rol),
+  });
 });
 
-router.post('/:key', getConfig, async (req, res) => {
+router.post('/:key', getConfig, requireEscritura, async (req, res) => {
   const cfg = req.maestroConfig;
   try {
     const data = coerceBody(cfg, req.body);
@@ -329,7 +399,7 @@ router.post('/:key', getConfig, async (req, res) => {
   }
 });
 
-router.get('/:key/:id/editar', getConfig, async (req, res) => {
+router.get('/:key/:id/editar', getConfig, requireEscritura, async (req, res) => {
   const cfg = req.maestroConfig;
   const item = await prisma[cfg.model].findUnique({ where: { id: Number(req.params.id) } });
   if (!item) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Registro inexistente.' });
@@ -337,7 +407,7 @@ router.get('/:key/:id/editar', getConfig, async (req, res) => {
   res.render('maestros/form', { title: `Editar ${cfg.singular}`, key: req.maestroKey, cfg, item, optionsMap, error: null });
 });
 
-router.post('/:key/:id', getConfig, async (req, res) => {
+router.post('/:key/:id', getConfig, requireEscritura, async (req, res) => {
   const cfg = req.maestroConfig;
   const id = Number(req.params.id);
   try {
@@ -360,10 +430,7 @@ router.post('/:key/:id', getConfig, async (req, res) => {
   }
 });
 
-// Eliminar un registro. Toda la ruta /maestros ya exige rol ADMINISTRACION
-// (ver el router.use al inicio del archivo), asi que solo Administracion
-// puede llegar hasta aca.
-router.post('/:key/:id/eliminar', getConfig, async (req, res) => {
+router.post('/:key/:id/eliminar', getConfig, requireEliminar, async (req, res) => {
   const cfg = req.maestroConfig;
   const id = Number(req.params.id);
   try {
