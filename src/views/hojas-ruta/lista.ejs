@@ -1,10 +1,13 @@
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0">Hojas de Ruta</h4>
-  <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-    <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">+ Nueva Hoja de Ruta</a>
-  <% } else if (user.rol === 'PORTERIA') { %>
-    <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">+ Ingreso de Camión</a>
-  <% } %>
+  <div class="d-flex gap-2">
+    <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
+      <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">+ Nueva Hoja de Ruta</a>
+    <% } %>
+    <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
+      <a href="/hojas-ruta/nueva?modo=ingreso" class="btn btn-outline-primary btn-sm">+ Ingreso de Camión</a>
+    <% } %>
+  </div>
 </div>
 
 <form method="get" class="row g-2 mb-3">

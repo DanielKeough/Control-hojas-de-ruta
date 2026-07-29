@@ -95,13 +95,24 @@ router.get('/', async (req, res) => {
 
 router.get('/nueva', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
-  res.render('hojas-ruta/form', { title: 'Nueva Hoja de Ruta', hoja: null, ...formData, error: null });
+  // Porteria siempre carga solo el encabezado (ingreso del camion). Logistica,
+  // Administracion y Superusuario pueden elegir ese mismo modo simplificado
+  // agregando ?modo=ingreso al link (ver nav/dashboard).
+  const soloEncabezado = req.user.rol === 'PORTERIA' || req.query.modo === 'ingreso';
+  res.render('hojas-ruta/form', {
+    title: soloEncabezado ? 'Ingreso de Camión' : 'Nueva Hoja de Ruta',
+    hoja: null,
+    soloEncabezado,
+    ...formData,
+    error: null,
+  });
 });
 
 router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
+  const body = req.body;
+  const soloEncabezado = body.soloEncabezado === '1';
   try {
-    const body = req.body;
     const data = {
       fechaHoraEmision: body.fechaHoraEmision ? new Date(body.fechaHoraEmision) : new Date(),
       transportistaId: parseInt(body.transportistaId, 10),
@@ -117,7 +128,13 @@ router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUS
     const hoja = await prisma.hojaRuta.create({ data });
     res.redirect(`/hojas-ruta/${hoja.id}`);
   } catch (err) {
-    res.status(400).render('hojas-ruta/form', { title: 'Nueva Hoja de Ruta', hoja: null, ...formData, error: err.message });
+    res.status(400).render('hojas-ruta/form', {
+      title: soloEncabezado ? 'Ingreso de Camión' : 'Nueva Hoja de Ruta',
+      hoja: null,
+      soloEncabezado,
+      ...formData,
+      error: err.message,
+    });
   }
 });
 
