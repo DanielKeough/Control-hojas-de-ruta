@@ -5,6 +5,7 @@
   if (!container || !tplDetalle || !tplRemito) return;
 
   const sucursales = window.__SUCURSALES__ || [];
+  const clientes = window.__CLIENTES__ || [];
 
   function reindex() {
     const blocks = container.querySelectorAll('.detalle-block');
@@ -24,6 +25,12 @@
   }
 
   function fillSucursales(selectEl, clienteId, selectedSucursalId) {
+    if (!clienteId) {
+      selectEl.innerHTML = '<option value="">-- Elegir cliente primero --</option>';
+      selectEl.disabled = true;
+      return;
+    }
+    selectEl.disabled = false;
     selectEl.innerHTML = '<option value="">-- Seleccionar --</option>';
     sucursales
       .filter((s) => String(s.clienteId) === String(clienteId))
@@ -34,6 +41,21 @@
         if (selectedSucursalId && String(selectedSucursalId) === String(s.id)) opt.selected = true;
         selectEl.appendChild(opt);
       });
+  }
+
+  // Propone el domicilio de entrega segun la sucursal elegida; si no hay
+  // sucursal seleccionada, lo propone segun el domicilio del cliente.
+  function proponerDomicilio(block, clienteId, sucursalId) {
+    const domicilioInput = block.querySelector('.f-domicilio');
+    if (sucursalId) {
+      const suc = sucursales.find((s) => String(s.id) === String(sucursalId));
+      if (suc && suc.domicilio) {
+        domicilioInput.value = suc.domicilio;
+        return;
+      }
+    }
+    const cli = clientes.find((c) => String(c.id) === String(clienteId));
+    domicilioInput.value = (cli && cli.domicilio) || '';
   }
 
   function toggleKm(block) {
@@ -75,6 +97,10 @@
 
     clienteSelect.addEventListener('change', () => {
       fillSucursales(sucursalSelect, clienteSelect.value, null);
+      proponerDomicilio(block, clienteSelect.value, null);
+    });
+    sucursalSelect.addEventListener('change', () => {
+      proponerDomicilio(block, clienteSelect.value, sucursalSelect.value);
     });
     block.querySelector('.btn-remove-detalle').addEventListener('click', () => {
       block.remove();

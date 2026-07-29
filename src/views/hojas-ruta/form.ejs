@@ -104,7 +104,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
         </div>
         <div class="col-md-3">
           <label class="form-label">Sucursal</label>
-          <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required>
+          <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required disabled>
             <option value="">-- Elegir cliente primero --</option>
           </select>
         </div>
@@ -184,6 +184,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
 
 <script>
   window.__SUCURSALES__ = <%- JSON.stringify(sucursales.map(s => ({ id: s.id, clienteId: s.clienteId, nombre: s.nombre, domicilio: s.domicilio }))).replace(/</g, '\\u003c') %>;
+  window.__CLIENTES__ = <%- JSON.stringify(clientes.map(c => ({ id: c.id, domicilio: c.domicilio }))).replace(/</g, '\\u003c') %>;
   window.__INITIAL_DETALLES__ = <%- JSON.stringify(hoja ? hoja.detalles.map(d => ({
     ordenPrioridad: d.ordenPrioridad,
     clienteId: d.clienteId,
