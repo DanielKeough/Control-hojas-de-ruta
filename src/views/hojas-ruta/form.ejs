@@ -15,11 +15,13 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
   <div class="card mb-3">
     <div class="card-header">Encabezado</div>
     <div class="card-body">
-      <div class="row g-3">
+      <div class="row g-3 mb-3">
         <div class="col-md-3">
           <label class="form-label">Fecha y hora de emisión</label>
           <input type="datetime-local" class="form-control" name="fechaHoraEmision" value="<%= fmtDatetimeLocal(hoja ? hoja.fechaHoraEmision : null) %>" required>
         </div>
+      </div>
+      <div class="row g-3 mb-3">
         <div class="col-md-3">
           <label class="form-label">Transporte</label>
           <select class="form-select" id="f-transportista" name="transportistaId" required>
@@ -29,7 +31,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
             <% }); %>
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label">Patente camión</label>
           <select class="form-select" name="camionId" required>
             <option value="">-- Seleccionar --</option>
@@ -38,7 +40,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
             <% }); %>
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label class="form-label">Patente acoplado</label>
           <select class="form-select" name="acopladoId">
             <option value="">(sin acoplado)</option>
@@ -47,11 +49,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
             <% }); %>
           </select>
         </div>
-        <div class="col-md-2">
-          <label class="form-label">Ticket pesada balanza</label>
-          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= esc(hoja ? hoja.ticketPesadaBalanza : '') %>" placeholder="Lo completa Portería">
-        </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
           <label class="form-label">Conductor (Apellido y Nombre / DNI)</label>
           <select class="form-select" name="conductorId" required>
             <option value="">-- Seleccionar --</option>
@@ -59,6 +57,20 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
               <option value="<%= c.id %>" <%= hoja && hoja.conductorId === c.id ? 'selected' : '' %>><%= c.apellido %>, <%= c.nombre %> (DNI <%= c.dni %>)</option>
             <% }); %>
           </select>
+        </div>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Ticket pesada balanza</label>
+          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= esc(hoja ? hoja.ticketPesadaBalanza : '') %>" placeholder="Lo completa Portería">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tara</label>
+          <input type="number" step="0.01" class="form-control" name="tara" value="<%= hoja && hoja.tara != null ? hoja.tara : '' %>" placeholder="Lo completa Portería">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Peso Bruto</label>
+          <input type="number" step="0.01" class="form-control" name="pesoBruto" value="<%= hoja && hoja.pesoBruto != null ? hoja.pesoBruto : '' %>" placeholder="Lo completa Portería">
         </div>
       </div>
     </div>

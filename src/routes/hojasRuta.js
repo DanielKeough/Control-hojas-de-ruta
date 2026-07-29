@@ -109,6 +109,8 @@ router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res) =>
       acopladoId: toNullableInt(body.acopladoId),
       conductorId: parseInt(body.conductorId, 10),
       ticketPesadaBalanza: toNullableString(body.ticketPesadaBalanza),
+      tara: toNullableFloat(body.tara),
+      pesoBruto: toNullableFloat(body.pesoBruto),
       usuarioCreadorId: req.user.id,
       detalles: { create: parseDetalles(body.detalles) },
     };
@@ -172,6 +174,8 @@ router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION'), async (req, res)
           acopladoId: toNullableInt(body.acopladoId),
           conductorId: parseInt(body.conductorId, 10),
           ticketPesadaBalanza: toNullableString(body.ticketPesadaBalanza),
+          tara: toNullableFloat(body.tara),
+          pesoBruto: toNullableFloat(body.pesoBruto),
           detalles: { create: parseDetalles(body.detalles) },
         },
       });
