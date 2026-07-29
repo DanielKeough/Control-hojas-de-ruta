@@ -1,8 +1,17 @@
 body {
-  background-color: #f4f6f8;
+  background-color: #e6eaee;
+}
+.card {
+  border: 1px solid #d5dbe1;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
 }
 .card-header {
   font-weight: 600;
+  background-color: #eef1f4;
+  border-bottom: 1px solid #d5dbe1;
+}
+.table {
+  background-color: #fff;
 }
 table.remitos-table input,
 table.remitos-table select {
