@@ -93,12 +93,12 @@ router.get('/', async (req, res) => {
   res.render('hojas-ruta/lista', { title: 'Hojas de Ruta', hojas, numero: numero || '' });
 });
 
-router.get('/nueva', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.get('/nueva', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
   res.render('hojas-ruta/form', { title: 'Nueva Hoja de Ruta', hoja: null, ...formData, error: null });
 });
 
-router.post('/', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
   const formData = await loadFormData();
   try {
     const body = req.body;

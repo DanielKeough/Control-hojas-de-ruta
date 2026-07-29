@@ -84,8 +84,16 @@ router.post('/:id', async (req, res) => {
           },
         });
       }
+      // El pesaje (ticket/tara/peso bruto) se puede cargar en cualquier momento
+      // sin cerrar la hoja. Solo pasa a CONTROLADA cuando ya se registro la
+      // recepcion de todos los remitos en destino.
       if (existente.estado === 'ABIERTA') {
-        await tx.hojaRuta.update({ where: { id }, data: { estado: 'CONTROLADA' } });
+        const remitosActuales = await tx.remito.findMany({ where: { detalle: { hojaRutaId: id } } });
+        const hayRemitos = remitosActuales.length > 0;
+        const todosControlados = hayRemitos && remitosActuales.every((r) => r.recepcionEstado !== 'PENDIENTE');
+        if (todosControlados) {
+          await tx.hojaRuta.update({ where: { id }, data: { estado: 'CONTROLADA' } });
+        }
       }
     });
 

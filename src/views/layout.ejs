@@ -24,6 +24,9 @@
           <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/hojas-ruta/nueva">Nueva Hoja de Ruta</a></li>
           <% } %>
+          <% if (user.rol === 'PORTERIA') { %>
+            <li class="nav-item"><a class="nav-link" href="/hojas-ruta/nueva">Ingreso de Camión</a></li>
+          <% } %>
           <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <li class="nav-item"><a class="nav-link" href="/control">Control y Cierre</a></li>
           <% } %>

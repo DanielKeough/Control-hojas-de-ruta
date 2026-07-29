@@ -7,10 +7,12 @@
         <div class="card-body">
           <h5 class="card-title">Hojas de Ruta</h5>
           <p class="card-text">
-            <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>Registrar una nueva hoja de ruta o consultar las existentes.<% } else { %>Consultar las hojas de ruta existentes.<% } %>
+            <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>Registrar una nueva hoja de ruta, o buscar entre las abiertas para completar destinos y remitos.<% } else if (user.rol === 'PORTERIA') { %>Registrar el ingreso de un camión con la tara, o consultar las existentes.<% } else { %>Consultar las hojas de ruta existentes.<% } %>
           </p>
           <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
             <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Nueva Hoja de Ruta</a>
+          <% } else if (user.rol === 'PORTERIA') { %>
+            <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Ingreso de Camión</a>
           <% } %>
           <a href="/hojas-ruta" class="btn btn-outline-secondary btn-sm">Ver listado</a>
         </div>
@@ -33,7 +35,7 @@
       <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title">Control y Cierre</h5>
-          <p class="card-text">Cargar ticket de pesada y registrar la recepción de cada remito.</p>
+          <p class="card-text">Cargar ticket de pesada, tara y peso bruto (a la salida) y registrar la recepción de cada remito.</p>
           <a href="/control" class="btn btn-info btn-sm">Ir a Control</a>
         </div>
       </div>

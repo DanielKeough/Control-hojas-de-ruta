@@ -5,6 +5,9 @@ function fmtDatetimeLocal(d) {
   return `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
 }
 function esc(v) { return v === null || v === undefined ? '' : v; }
+// Porteria solo registra el ingreso del camion (encabezado minimo); Logistica
+// completa despues los destinos/remitos editando esta misma hoja de ruta.
+const soloEncabezado = !hoja && user.rol === 'PORTERIA';
 %>
 <h4 class="mb-3"><%= title %></h4>
 <% if (error) { %>
@@ -62,30 +65,37 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">Ticket pesada balanza</label>
-          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= esc(hoja ? hoja.ticketPesadaBalanza : '') %>" placeholder="Lo completa Portería">
+          <input type="text" class="form-control" name="ticketPesadaBalanza" value="<%= esc(hoja ? hoja.ticketPesadaBalanza : '') %>" placeholder="<%= user.rol === 'PORTERIA' ? '' : 'Lo completa Portería' %>">
         </div>
         <div class="col-md-4">
-          <label class="form-label">Tara</label>
-          <input type="number" step="0.01" class="form-control" name="tara" value="<%= hoja && hoja.tara != null ? hoja.tara : '' %>" placeholder="Lo completa Portería">
+          <label class="form-label">Tara<% if (user.rol === 'PORTERIA') { %> (peso del camión vacío)<% } %></label>
+          <input type="number" step="0.01" class="form-control" name="tara" value="<%= hoja && hoja.tara != null ? hoja.tara : '' %>" placeholder="<%= user.rol === 'PORTERIA' ? '' : 'Lo completa Portería' %>" <%= user.rol === 'PORTERIA' ? 'required' : '' %>>
         </div>
         <div class="col-md-4">
           <label class="form-label">Peso Bruto</label>
-          <input type="number" step="0.01" class="form-control" name="pesoBruto" value="<%= hoja && hoja.pesoBruto != null ? hoja.pesoBruto : '' %>" placeholder="Lo completa Portería">
+          <input type="number" step="0.01" class="form-control" name="pesoBruto" value="<%= hoja && hoja.pesoBruto != null ? hoja.pesoBruto : '' %>" placeholder="Lo completa Portería en Control y Cierre, una vez cargado el camión">
         </div>
       </div>
     </div>
   </div>
 
-  <h5>Destinos de entrega</h5>
-  <div id="detalles-container"></div>
-  <button type="button" id="btn-add-detalle" class="btn btn-outline-primary mb-3">+ Agregar destino</button>
+  <% if (soloEncabezado) { %>
+    <div class="alert alert-info">
+      Se guarda solo con estos datos para que el camión pueda ingresar a cargar. Logística va a completar los destinos, remitos, pallets e IFCOs más tarde, buscando esta hoja de ruta entre las <strong>abiertas</strong>.
+    </div>
+  <% } else { %>
+    <h5>Destinos de entrega</h5>
+    <div id="detalles-container"></div>
+    <button type="button" id="btn-add-detalle" class="btn btn-outline-primary mb-3">+ Agregar destino</button>
+  <% } %>
 
   <div class="d-flex gap-2 mb-5">
-    <button type="submit" class="btn btn-primary">Guardar Hoja de Ruta</button>
+    <button type="submit" class="btn btn-primary"><%= soloEncabezado ? 'Guardar e Ingresar Camión' : 'Guardar Hoja de Ruta' %></button>
     <a href="<%= hoja ? `/hojas-ruta/${hoja.id}` : '/hojas-ruta' %>" class="btn btn-outline-secondary">Cancelar</a>
   </div>
 </form>
 
+<% if (!soloEncabezado) { %>
 <!-- Template de un destino (se clona por JS) -->
 <template id="tpl-detalle">
   <div class="card mb-3 detalle-block">
@@ -181,6 +191,7 @@ function esc(v) { return v === null || v === undefined ? '' : v; }
     <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-remito">&times;</button></td>
   </tr>
 </template>
+<% } %>
 
 <script>
   window.__SUCURSALES__ = <%- JSON.stringify(sucursales.map(s => ({ id: s.id, clienteId: s.clienteId, nombre: s.nombre, domicilio: s.domicilio }))).replace(/</g, '\\u003c') %>;
