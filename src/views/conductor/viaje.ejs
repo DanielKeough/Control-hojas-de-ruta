@@ -4,6 +4,13 @@
 <h5 class="mb-3">HR-<%= String(hoja.id).padStart(6,'0') %> — <%= hoja.transportista.razonSocial %> (<%= hoja.camion.patente %>)</h5>
 <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
 
+<% if (hoja.detalles.length === 0) { %>
+  <div class="alert alert-warning">
+    Todavía no se cargaron los destinos de esta hoja de ruta. El kilometraje y la hora se cargan por cada tramo
+    (destino), así que primero Logística tiene que completar los destinos antes de poder registrarlos acá.
+  </div>
+<% } %>
+
 <form method="post" action="/mis-viajes/<%= hoja.id %>">
   <% hoja.detalles.forEach(function(d) { %>
     <div class="card mb-3">

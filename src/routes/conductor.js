@@ -18,7 +18,7 @@ function toNullableString(v) {
 router.get('/', async (req, res) => {
   const hojas = await prisma.hojaRuta.findMany({
     where: { transportista: { controlKmHabilitado: true } },
-    include: { transportista: true, camion: true },
+    include: { transportista: true, camion: true, _count: { select: { detalles: true } } },
     orderBy: { id: 'desc' },
     take: 50,
   });

@@ -10,8 +10,13 @@
           <div class="text-muted small"><%= h.transportista.razonSocial %> — <%= h.camion.patente %></div>
           <div class="text-muted small"><%= new Date(h.fechaHoraEmision).toLocaleString('es-AR') %></div>
         </div>
-        <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[h.estado]; %>
-        <span class="badge bg-<%= badge %>"><%= h.estado %></span>
+        <div class="text-end">
+          <% const badge = { ABIERTA: 'secondary', CONTROLADA: 'info', FACTURADA: 'success' }[h.estado]; %>
+          <span class="badge bg-<%= badge %>"><%= h.estado %></span>
+          <% if (h._count.detalles === 0) { %>
+            <div class="small text-warning mt-1">Sin destinos cargados</div>
+          <% } %>
+        </div>
       </div>
     </a>
   <% }); %>
