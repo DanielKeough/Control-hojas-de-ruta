@@ -8,7 +8,7 @@
   <% hoja.detalles.forEach(function(d) { %>
     <div class="card mb-3">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <span>Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %></span>
+        <span>Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %><% if (d.sucursal) { %> / <%= d.sucursal.nombre %><% } %></span>
         <% if (d.tramoValidado) { %>
           <span class="badge bg-success">Validado por Portería</span>
         <% } else { %>

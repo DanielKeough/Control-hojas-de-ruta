@@ -14,7 +14,7 @@
 <form method="post" action="/facturacion/<%= hoja.id %>">
   <% hoja.detalles.forEach(function(d) { %>
     <div class="card mb-3">
-      <div class="card-header">Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %> / <%= d.sucursal.nombre %></div>
+      <div class="card-header">Destino #<%= d.ordenPrioridad %> — <%= d.cliente.razonSocial %><% if (d.sucursal) { %> / <%= d.sucursal.nombre %><% } %></div>
       <div class="card-body">
         <table class="table table-sm align-middle">
           <thead>

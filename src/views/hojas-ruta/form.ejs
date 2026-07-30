@@ -109,26 +109,36 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
       <div class="grupo-cliente-turno">
         <span class="grupo-etiqueta">Cliente y turno</span>
         <div class="row g-3 mb-2">
-          <div class="col-md-3">
+          <div class="col-md-4">
             <label class="form-label">Cliente</label>
             <select class="form-select form-select-sm f-cliente" name="detalles[__D__][clienteId]" required>
               <option value="">-- Seleccionar --</option>
               <% clientes.forEach(function(c) { %><option value="<%= c.id %>"><%= c.razonSocial %></option><% }); %>
             </select>
           </div>
-          <div class="col-md-3">
-            <label class="form-label">Sucursal</label>
-            <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required disabled>
+          <div class="col-md-4">
+            <label class="form-label">Sucursal <small class="text-muted">(opcional)</small></label>
+            <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" disabled>
               <option value="">-- Elegir cliente primero --</option>
             </select>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Domicilio de entrega</label>
-            <input type="text" class="form-control form-control-sm f-domicilio" name="detalles[__D__][domicilioEntrega]" required>
           </div>
           <div class="col-md-2">
             <label class="form-label">Orden prioridad</label>
             <input type="number" min="1" class="form-control form-control-sm f-orden" name="detalles[__D__][ordenPrioridad]" value="1" required>
+          </div>
+        </div>
+        <div class="row g-3 mb-2">
+          <div class="col-md-5">
+            <label class="form-label">Domicilio de entrega</label>
+            <input type="text" class="form-control form-control-sm f-domicilio" name="detalles[__D__][domicilioEntrega]" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Localidad</label>
+            <input type="text" class="form-control form-control-sm f-localidad" name="detalles[__D__][localidadEntrega]">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Provincia</label>
+            <input type="text" class="form-control form-control-sm f-provincia" name="detalles[__D__][provinciaEntrega]">
           </div>
         </div>
         <div class="row g-3 mb-2">
@@ -153,25 +163,13 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
             <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroOrdenCompra]">
           </div>
         </div>
-        <div class="row g-3 mb-2 bloque-km" style="display:none;">
-          <div class="col-12"><small class="text-muted">Campos exclusivos de transportes con control de kilometraje (ej. Monti Media)</small></div>
-          <div class="col-md-3">
-            <label class="form-label">Km inicio tramo</label>
-            <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmInicio]">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Hora inicio tramo</label>
-            <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaInicioTramo]">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Km fin tramo</label>
-            <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmFin]">
-          </div>
-          <div class="col-md-3">
-            <label class="form-label">Hora fin tramo</label>
-            <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaFinTramo]">
-          </div>
-        </div>
+        <!-- Km y hora de cada tramo: los completa el Conductor desde "Mis Viajes" y los
+             valida Portería en Control y Cierre. No se editan desde este formulario;
+             estos campos ocultos solo evitan perder esos datos al reeditar la hoja. -->
+        <input type="hidden" name="detalles[__D__][kmInicio]">
+        <input type="hidden" name="detalles[__D__][horaInicioTramo]">
+        <input type="hidden" name="detalles[__D__][kmFin]">
+        <input type="hidden" name="detalles[__D__][horaFinTramo]">
       </div>
 
       <div class="grupo-carga">
@@ -209,13 +207,15 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
 <% } %>
 
 <script>
-  window.__SUCURSALES__ = <%- JSON.stringify(sucursales.map(s => ({ id: s.id, clienteId: s.clienteId, nombre: s.nombre, domicilio: s.domicilio }))).replace(/</g, '\\u003c') %>;
-  window.__CLIENTES__ = <%- JSON.stringify(clientes.map(c => ({ id: c.id, domicilio: c.domicilio }))).replace(/</g, '\\u003c') %>;
+  window.__SUCURSALES__ = <%- JSON.stringify(sucursales.map(s => ({ id: s.id, clienteId: s.clienteId, nombre: s.nombre, domicilio: s.domicilio, localidad: s.localidad, provincia: s.provincia }))).replace(/</g, '\\u003c') %>;
+  window.__CLIENTES__ = <%- JSON.stringify(clientes.map(c => ({ id: c.id, domicilio: c.domicilio, localidad: c.localidad, provincia: c.provincia }))).replace(/</g, '\\u003c') %>;
   window.__INITIAL_DETALLES__ = <%- JSON.stringify(hoja ? hoja.detalles.map(d => ({
     ordenPrioridad: d.ordenPrioridad,
     clienteId: d.clienteId,
     sucursalId: d.sucursalId,
     domicilioEntrega: d.domicilioEntrega,
+    localidadEntrega: d.localidadEntrega,
+    provinciaEntrega: d.provinciaEntrega,
     numeroTurno: d.numeroTurno,
     horaTurno: d.horaTurno,
     rangoHorarioDesde: d.rangoHorarioDesde,

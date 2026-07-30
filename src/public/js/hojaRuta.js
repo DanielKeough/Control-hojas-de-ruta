@@ -31,7 +31,7 @@
       return;
     }
     selectEl.disabled = false;
-    selectEl.innerHTML = '<option value="">-- Seleccionar --</option>';
+    selectEl.innerHTML = '<option value="">-- Sin sucursal --</option>';
     sucursales
       .filter((s) => String(s.clienteId) === String(clienteId))
       .forEach((s) => {
@@ -43,32 +43,24 @@
       });
   }
 
-  // Propone el domicilio de entrega segun la sucursal elegida; si no hay
-  // sucursal seleccionada, lo propone segun el domicilio del cliente.
-  function proponerDomicilio(block, clienteId, sucursalId) {
+  // Propone domicilio/localidad/provincia de entrega segun la sucursal elegida;
+  // si no hay sucursal seleccionada (es opcional), los propone segun la ficha
+  // del cliente.
+  function proponerDireccion(block, clienteId, sucursalId) {
     const domicilioInput = block.querySelector('.f-domicilio');
-    if (sucursalId) {
-      const suc = sucursales.find((s) => String(s.id) === String(sucursalId));
-      if (suc && suc.domicilio) {
-        domicilioInput.value = suc.domicilio;
-        return;
-      }
+    const localidadInput = block.querySelector('.f-localidad');
+    const provinciaInput = block.querySelector('.f-provincia');
+    const suc = sucursalId ? sucursales.find((s) => String(s.id) === String(sucursalId)) : null;
+    if (suc) {
+      domicilioInput.value = suc.domicilio || '';
+      localidadInput.value = suc.localidad || '';
+      provinciaInput.value = suc.provincia || '';
+      return;
     }
     const cli = clientes.find((c) => String(c.id) === String(clienteId));
     domicilioInput.value = (cli && cli.domicilio) || '';
-  }
-
-  function toggleKm(block) {
-    const transportistaSelect = document.getElementById('f-transportista');
-    const opt = transportistaSelect ? transportistaSelect.selectedOptions[0] : null;
-    const habilitado = !!opt && opt.dataset.km === 'true';
-    block.querySelectorAll('.bloque-km').forEach((el) => {
-      el.style.display = habilitado ? '' : 'none';
-    });
-  }
-
-  function toggleKmAll() {
-    container.querySelectorAll('.detalle-block').forEach(toggleKm);
+    localidadInput.value = (cli && cli.localidad) || '';
+    provinciaInput.value = (cli && cli.provincia) || '';
   }
 
   function addRemito(block, data) {
@@ -98,10 +90,10 @@
 
     clienteSelect.addEventListener('change', () => {
       fillSucursales(sucursalSelect, clienteSelect.value, null);
-      proponerDomicilio(block, clienteSelect.value, null);
+      proponerDireccion(block, clienteSelect.value, null);
     });
     sucursalSelect.addEventListener('change', () => {
-      proponerDomicilio(block, clienteSelect.value, sucursalSelect.value);
+      proponerDireccion(block, clienteSelect.value, sucursalSelect.value);
     });
     block.querySelector('.btn-remove-detalle').addEventListener('click', () => {
       block.remove();
@@ -113,6 +105,8 @@
       clienteSelect.value = data.clienteId || '';
       fillSucursales(sucursalSelect, data.clienteId, data.sucursalId);
       block.querySelector('.f-domicilio').value = data.domicilioEntrega || '';
+      block.querySelector('.f-localidad').value = data.localidadEntrega || '';
+      block.querySelector('.f-provincia').value = data.provinciaEntrega || '';
       block.querySelector('.f-orden').value = data.ordenPrioridad || 1;
       block.querySelector('[name$="[numeroTurno]"]').value = data.numeroTurno || '';
       block.querySelector('[name$="[horaTurno]"]').value = data.horaTurno || '';
@@ -127,13 +121,10 @@
     } else {
       block.querySelector('.f-orden').value = container.children.length;
     }
-    toggleKm(block);
     reindex();
   }
 
   document.getElementById('btn-add-detalle').addEventListener('click', () => addDetalle(null));
-  const transportistaSelect = document.getElementById('f-transportista');
-  if (transportistaSelect) transportistaSelect.addEventListener('change', toggleKmAll);
 
   const initial = window.__INITIAL_DETALLES__ || [];
   if (initial.length) {
@@ -141,5 +132,4 @@
   } else {
     addDetalle(null);
   }
-  toggleKmAll();
 })();

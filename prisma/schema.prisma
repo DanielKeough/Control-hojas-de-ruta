@@ -204,9 +204,11 @@ model HojaRutaDetalle {
   ordenPrioridad   Int
   clienteId        Int
   cliente          Cliente  @relation(fields: [clienteId], references: [id])
-  sucursalId       Int
-  sucursal         Sucursal @relation(fields: [sucursalId], references: [id])
+  sucursalId       Int?
+  sucursal         Sucursal? @relation(fields: [sucursalId], references: [id])
   domicilioEntrega String
+  localidadEntrega String?
+  provinciaEntrega String?
   numeroTurno      String?
   horaTurno        String? // hora especifica "HH:mm"
   rangoHorarioDesde String? // ventana horaria "HH:mm"

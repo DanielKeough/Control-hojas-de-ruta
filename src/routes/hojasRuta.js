@@ -28,8 +28,10 @@ function parseDetalles(rawDetalles, envasesPorNombre) {
     return {
       ordenPrioridad: toNullableInt(d.ordenPrioridad) || idx + 1,
       clienteId: parseInt(d.clienteId, 10),
-      sucursalId: parseInt(d.sucursalId, 10),
+      sucursalId: toNullableInt(d.sucursalId),
       domicilioEntrega: d.domicilioEntrega || '',
+      localidadEntrega: toNullableString(d.localidadEntrega),
+      provinciaEntrega: toNullableString(d.provinciaEntrega),
       numeroTurno: toNullableString(d.numeroTurno),
       horaTurno: toNullableString(d.horaTurno),
       rangoHorarioDesde: toNullableString(d.rangoHorarioDesde),
@@ -53,7 +55,7 @@ function parseDetalles(rawDetalles, envasesPorNombre) {
           })),
       },
     };
-  }).filter((d) => !Number.isNaN(d.clienteId) && !Number.isNaN(d.sucursalId));
+  }).filter((d) => !Number.isNaN(d.clienteId));
 }
 
 async function loadFormData() {
