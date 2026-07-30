@@ -227,6 +227,13 @@ model HojaRutaDetalle {
   remitos Remito[]
 }
 
+model Envase {
+  id      Int      @id @default(autoincrement())
+  nombre  String   @unique
+  activo  Boolean  @default(true)
+  remitos Remito[]
+}
+
 model Remito {
   id                 Int             @id @default(autoincrement())
   detalleId          Int
@@ -236,6 +243,9 @@ model Remito {
   palletsDespachados Int
   cantidadIfco       Int             @default(0)
   numeroRemitoIfco   String?
+  envaseId           Int?
+  envase             Envase?         @relation(fields: [envaseId], references: [id])
+  cantidadEnvases    Int?
 
   // --- Control y cierre (carga Porteria) ---
   recepcionEstado    RecepcionEstado @default(PENDIENTE)

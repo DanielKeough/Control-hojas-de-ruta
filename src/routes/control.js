@@ -33,7 +33,7 @@ router.get('/:id', async (req, res) => {
       camion: true,
       acoplado: true,
       conductor: true,
-      detalles: { include: { cliente: true, sucursal: true, remitos: true }, orderBy: { ordenPrioridad: 'asc' } },
+      detalles: { include: { cliente: true, sucursal: true, remitos: { include: { envase: true } } }, orderBy: { ordenPrioridad: 'asc' } },
     },
   });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
@@ -106,7 +106,7 @@ router.post('/:id', async (req, res) => {
         camion: true,
         acoplado: true,
         conductor: true,
-        detalles: { include: { cliente: true, sucursal: true, remitos: true }, orderBy: { ordenPrioridad: 'asc' } },
+        detalles: { include: { cliente: true, sucursal: true, remitos: { include: { envase: true } } }, orderBy: { ordenPrioridad: 'asc' } },
       },
     });
     res.status(400).render('control/control', { title: `Control Hoja de Ruta #${id}`, hoja, error: err.message });

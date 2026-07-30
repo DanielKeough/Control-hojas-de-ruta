@@ -20,7 +20,7 @@ function toNullableString(v) {
   return v;
 }
 
-function parseDetalles(rawDetalles) {
+function parseDetalles(rawDetalles, envasesPorNombre) {
   const arr = Array.isArray(rawDetalles) ? rawDetalles : Object.values(rawDetalles || {});
   return arr.map((d, idx) => {
     const rawRemitos = d.remitos;
@@ -48,6 +48,8 @@ function parseDetalles(rawDetalles) {
             palletsDespachados: toNullableInt(r.palletsDespachados) || 0,
             cantidadIfco: toNullableInt(r.cantidadIfco) || 0,
             numeroRemitoIfco: toNullableString(r.numeroRemitoIfco),
+            envaseId: r.envase ? envasesPorNombre.get(String(r.envase).trim().toLowerCase()) || null : null,
+            cantidadEnvases: toNullableInt(r.cantidadEnvases),
           })),
       },
     };
@@ -55,15 +57,21 @@ function parseDetalles(rawDetalles) {
 }
 
 async function loadFormData() {
-  const [transportistas, camiones, acoplados, conductores, clientes, sucursales] = await Promise.all([
+  const [transportistas, camiones, acoplados, conductores, clientes, sucursales, envases] = await Promise.all([
     prisma.transportista.findMany({ where: { activo: true }, orderBy: { razonSocial: 'asc' } }),
     prisma.camion.findMany({ where: { activo: true }, orderBy: { patente: 'asc' } }),
     prisma.acoplado.findMany({ where: { activo: true }, orderBy: { patente: 'asc' } }),
     prisma.conductor.findMany({ where: { activo: true }, orderBy: { apellido: 'asc' } }),
     prisma.cliente.findMany({ where: { activo: true }, orderBy: { razonSocial: 'asc' } }),
     prisma.sucursal.findMany({ where: { activo: true }, orderBy: { nombre: 'asc' } }),
+    prisma.envase.findMany({ where: { activo: true }, orderBy: { nombre: 'asc' } }),
   ]);
-  return { transportistas, camiones, acoplados, conductores, clientes, sucursales };
+  return { transportistas, camiones, acoplados, conductores, clientes, sucursales, envases };
+}
+
+async function getEnvasesPorNombre() {
+  const envases = await prisma.envase.findMany();
+  return new Map(envases.map((e) => [e.nombre.toLowerCase(), e.id]));
 }
 
 const includeCompleto = {
@@ -73,7 +81,7 @@ const includeCompleto = {
   conductor: true,
   usuarioCreador: true,
   detalles: {
-    include: { cliente: true, sucursal: true, remitos: { include: { usuarioControl: true, usuarioImputacion: true } } },
+    include: { cliente: true, sucursal: true, remitos: { include: { envase: true, usuarioControl: true, usuarioImputacion: true } } },
     orderBy: { ordenPrioridad: 'asc' },
   },
 };
@@ -123,7 +131,7 @@ router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUS
       tara: toNullableFloat(body.tara),
       pesoBruto: toNullableFloat(body.pesoBruto),
       usuarioCreadorId: req.user.id,
-      detalles: { create: parseDetalles(body.detalles) },
+      detalles: { create: parseDetalles(body.detalles, await getEnvasesPorNombre()) },
     };
     const hoja = await prisma.hojaRuta.create({ data });
     res.redirect(`/hojas-ruta/${hoja.id}`);
@@ -180,6 +188,7 @@ router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), 
       return res.status(400).render('error', { title: 'No editable', mensaje: 'Esta hoja de ruta ya fue controlada y no puede editarse.' });
     }
     const body = req.body;
+    const envasesPorNombre = await getEnvasesPorNombre();
     await prisma.$transaction(async (tx) => {
       await tx.hojaRutaDetalle.deleteMany({ where: { hojaRutaId: id } });
       await tx.hojaRuta.update({
@@ -193,7 +202,7 @@ router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), 
           ticketPesadaBalanza: toNullableString(body.ticketPesadaBalanza),
           tara: toNullableFloat(body.tara),
           pesoBruto: toNullableFloat(body.pesoBruto),
-          detalles: { create: parseDetalles(body.detalles) },
+          detalles: { create: parseDetalles(body.detalles, envasesPorNombre) },
         },
       });
     });

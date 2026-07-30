@@ -81,7 +81,7 @@
       <table class="table table-sm table-bordered mb-0">
         <thead>
           <tr>
-            <th>Remito</th><th>Kilos desp.</th><th>Pallets desp.</th><th>IFCOs desp.</th><th>Remito IFCO</th>
+            <th>Remito</th><th>Kilos desp.</th><th>Envase</th><th>Cant. Envases</th><th>IFCOs desp.</th><th>Remito IFCO</th>
             <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib./rech.</th>
             <th>Entrega</th>
             <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
@@ -92,7 +92,8 @@
             <tr>
               <td><%= r.numeroRemito %></td>
               <td><%= r.kilosDespachados %></td>
-              <td><%= r.palletsDespachados %></td>
+              <td><%= r.envase ? r.envase.nombre : '-' %></td>
+              <td><%= r.cantidadEnvases != null ? r.cantidadEnvases : '-' %></td>
               <td><%= r.cantidadIfco %></td>
               <td><%= r.numeroRemitoIfco || '-' %></td>
               <td>

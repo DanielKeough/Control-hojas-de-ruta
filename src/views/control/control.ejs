@@ -58,7 +58,7 @@
           <thead>
             <tr>
               <th>Remito</th>
-              <th>Kilos / Pallets desp.</th>
+              <th>Kilos / Envase desp.</th>
               <th>Recepción</th>
               <th>Kilos recibidos</th>
               <th>Pallets ARLOG</th>
@@ -74,7 +74,7 @@
                   <%= r.numeroRemito %>
                   <% if (r.cantidadIfco > 0) { %><br><small class="text-muted">IFCO: <%= r.cantidadIfco %> (remito <%= r.numeroRemitoIfco || '-' %>)</small><% } %>
                 </td>
-                <td><%= r.kilosDespachados %> kg / <%= r.palletsDespachados %> pallets</td>
+                <td><%= r.kilosDespachados %> kg<% if (r.envase) { %> / <%= r.cantidadEnvases != null ? r.cantidadEnvases : '' %> <%= r.envase.nombre %><% } %></td>
                 <td>
                   <select class="form-select form-select-sm" name="remitos[r<%= r.id %>][recepcionEstado]">
                     <% ['PENDIENTE','TOTAL','PARCIAL'].forEach(function(opt) { %>

@@ -17,3 +17,34 @@ table.remitos-table input,
 table.remitos-table select {
   min-width: 90px;
 }
+
+/* Destino de la hoja de ruta: dos bloques diferenciados por color */
+.grupo-cliente-turno {
+  background-color: #fdecea;
+  border: 1px solid #f0b9bd;
+  border-radius: 6px;
+  padding: 12px 12px 2px;
+  margin-bottom: 14px;
+}
+.grupo-cliente-turno .form-label {
+  color: #8a3236;
+}
+.grupo-carga {
+  background-color: #eaf1fb;
+  border: 1px solid #b7d1ef;
+  border-radius: 6px;
+  padding: 12px;
+}
+.grupo-carga .form-label {
+  color: #2a5788;
+}
+.grupo-etiqueta {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: block;
+}
+.grupo-cliente-turno .grupo-etiqueta { color: #b3454b; }
+.grupo-carga .grupo-etiqueta { color: #3970ab; }

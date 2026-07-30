@@ -156,6 +156,18 @@ const CONFIG = {
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
   },
+  envases: {
+    model: 'envase',
+    singular: 'Envase',
+    titulo: 'Envases',
+    readRoles: ROLES_LECTURA_DEFAULT,
+    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
+    fields: [
+      { name: 'nombre', label: 'Nombre', type: 'text', required: true },
+      { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
+    ],
+  },
   clientes: {
     model: 'cliente',
     singular: 'Cliente',

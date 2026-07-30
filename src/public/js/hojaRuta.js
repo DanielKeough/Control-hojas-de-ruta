@@ -77,7 +77,8 @@
     if (data) {
       row.querySelector('[name*="[numeroRemito]"]').value = data.numeroRemito || '';
       row.querySelector('[name*="[kilosDespachados]"]').value = data.kilosDespachados != null ? data.kilosDespachados : '';
-      row.querySelector('[name*="[palletsDespachados]"]').value = data.palletsDespachados != null ? data.palletsDespachados : '';
+      row.querySelector('[name*="[envase]"]').value = data.envase || '';
+      row.querySelector('[name*="[cantidadEnvases]"]').value = data.cantidadEnvases != null ? data.cantidadEnvases : '';
       row.querySelector('[name*="[cantidadIfco]"]').value = data.cantidadIfco != null ? data.cantidadIfco : 0;
       row.querySelector('[name*="[numeroRemitoIfco]"]').value = data.numeroRemitoIfco || '';
     }

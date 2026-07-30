@@ -106,78 +106,86 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
       <button type="button" class="btn btn-outline-danger btn-sm btn-remove-detalle">Quitar destino</button>
     </div>
     <div class="card-body">
-      <div class="row g-3 mb-2">
-        <div class="col-md-3">
-          <label class="form-label">Cliente</label>
-          <select class="form-select form-select-sm f-cliente" name="detalles[__D__][clienteId]" required>
-            <option value="">-- Seleccionar --</option>
-            <% clientes.forEach(function(c) { %><option value="<%= c.id %>"><%= c.razonSocial %></option><% }); %>
-          </select>
+      <div class="grupo-cliente-turno">
+        <span class="grupo-etiqueta">Cliente y turno</span>
+        <div class="row g-3 mb-2">
+          <div class="col-md-3">
+            <label class="form-label">Cliente</label>
+            <select class="form-select form-select-sm f-cliente" name="detalles[__D__][clienteId]" required>
+              <option value="">-- Seleccionar --</option>
+              <% clientes.forEach(function(c) { %><option value="<%= c.id %>"><%= c.razonSocial %></option><% }); %>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Sucursal</label>
+            <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required disabled>
+              <option value="">-- Elegir cliente primero --</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Domicilio de entrega</label>
+            <input type="text" class="form-control form-control-sm f-domicilio" name="detalles[__D__][domicilioEntrega]" required>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Orden prioridad</label>
+            <input type="number" min="1" class="form-control form-control-sm f-orden" name="detalles[__D__][ordenPrioridad]" value="1" required>
+          </div>
         </div>
-        <div class="col-md-3">
-          <label class="form-label">Sucursal</label>
-          <select class="form-select form-select-sm f-sucursal" name="detalles[__D__][sucursalId]" required disabled>
-            <option value="">-- Elegir cliente primero --</option>
-          </select>
+        <div class="row g-3 mb-2">
+          <div class="col-md-2">
+            <label class="form-label">N° Turno</label>
+            <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroTurno]">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Hora turno</label>
+            <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaTurno]">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Rango desde</label>
+            <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioDesde]">
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Rango hasta</label>
+            <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioHasta]">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">N° Orden de compra cliente</label>
+            <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroOrdenCompra]">
+          </div>
         </div>
-        <div class="col-md-4">
-          <label class="form-label">Domicilio de entrega</label>
-          <input type="text" class="form-control form-control-sm f-domicilio" name="detalles[__D__][domicilioEntrega]" required>
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Orden prioridad</label>
-          <input type="number" min="1" class="form-control form-control-sm f-orden" name="detalles[__D__][ordenPrioridad]" value="1" required>
-        </div>
-      </div>
-      <div class="row g-3 mb-2">
-        <div class="col-md-2">
-          <label class="form-label">N° Turno</label>
-          <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroTurno]">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Hora turno</label>
-          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaTurno]">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Rango desde</label>
-          <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioDesde]">
-        </div>
-        <div class="col-md-2">
-          <label class="form-label">Rango hasta</label>
-          <input type="time" class="form-control form-control-sm" name="detalles[__D__][rangoHorarioHasta]">
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">N° Orden de compra cliente</label>
-          <input type="text" class="form-control form-control-sm" name="detalles[__D__][numeroOrdenCompra]">
-        </div>
-      </div>
-      <div class="row g-3 mb-2 bloque-km" style="display:none;">
-        <div class="col-12"><small class="text-muted">Campos exclusivos de transportes con control de kilometraje (ej. Monti Media)</small></div>
-        <div class="col-md-3">
-          <label class="form-label">Km inicio tramo</label>
-          <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmInicio]">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Hora inicio tramo</label>
-          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaInicioTramo]">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Km fin tramo</label>
-          <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmFin]">
-        </div>
-        <div class="col-md-3">
-          <label class="form-label">Hora fin tramo</label>
-          <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaFinTramo]">
+        <div class="row g-3 mb-2 bloque-km" style="display:none;">
+          <div class="col-12"><small class="text-muted">Campos exclusivos de transportes con control de kilometraje (ej. Monti Media)</small></div>
+          <div class="col-md-3">
+            <label class="form-label">Km inicio tramo</label>
+            <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmInicio]">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Hora inicio tramo</label>
+            <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaInicioTramo]">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Km fin tramo</label>
+            <input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][kmFin]">
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Hora fin tramo</label>
+            <input type="time" class="form-control form-control-sm" name="detalles[__D__][horaFinTramo]">
+          </div>
         </div>
       </div>
 
-      <table class="table table-sm align-middle remitos-table">
-        <thead>
-          <tr><th>N° Remito</th><th>Kilos desp.</th><th>Pallets desp.</th><th>Cant. IFCO</th><th>N° Remito IFCO</th><th></th></tr>
-        </thead>
-        <tbody class="remitos-container"></tbody>
-      </table>
-      <button type="button" class="btn btn-outline-primary btn-sm btn-add-remito">+ Agregar remito</button>
+      <div class="grupo-carga">
+        <span class="grupo-etiqueta">Carga transportada</span>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle remitos-table mb-2">
+            <thead>
+              <tr><th>N° Remito</th><th>Kilos desp.</th><th>Envase</th><th>Cant. Envases</th><th>Cant. IFCO</th><th>N° Remito IFCO</th><th></th></tr>
+            </thead>
+            <tbody class="remitos-container"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn-outline-primary btn-sm btn-add-remito">+ Agregar remito</button>
+      </div>
     </div>
   </div>
 </template>
@@ -187,12 +195,17 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
   <tr class="remito-row">
     <td><input type="text" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][numeroRemito]" required></td>
     <td><input type="number" step="0.01" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][kilosDespachados]" required></td>
-    <td><input type="number" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][palletsDespachados]" required></td>
+    <td><input type="text" class="form-control form-control-sm f-envase" name="detalles[__D__][remitos][__R__][envase]" list="envases-datalist" placeholder="Tipear..." autocomplete="off"></td>
+    <td><input type="number" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][cantidadEnvases]"></td>
     <td><input type="number" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][cantidadIfco]" value="0"></td>
     <td><input type="text" class="form-control form-control-sm" name="detalles[__D__][remitos][__R__][numeroRemitoIfco]"></td>
     <td><button type="button" class="btn btn-outline-danger btn-sm btn-remove-remito">&times;</button></td>
   </tr>
 </template>
+
+<datalist id="envases-datalist">
+  <% envases.forEach(function(e) { %><option value="<%= e.nombre %>"><% }); %>
+</datalist>
 <% } %>
 
 <script>
@@ -215,7 +228,8 @@ const modoIngreso = !hoja && typeof soloEncabezado !== 'undefined' && soloEncabe
     remitos: d.remitos.map(r => ({
       numeroRemito: r.numeroRemito,
       kilosDespachados: r.kilosDespachados,
-      palletsDespachados: r.palletsDespachados,
+      envase: r.envase ? r.envase.nombre : null,
+      cantidadEnvases: r.cantidadEnvases,
       cantidadIfco: r.cantidadIfco,
       numeroRemitoIfco: r.numeroRemitoIfco,
     })),

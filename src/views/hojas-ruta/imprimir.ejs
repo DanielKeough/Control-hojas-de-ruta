@@ -83,7 +83,8 @@
           <tr>
             <th>Remito</th>
             <th>Kilos</th>
-            <th>Pallets</th>
+            <th>Envase</th>
+            <th>Cant.</th>
             <th>IFCO</th>
             <th>Recepción</th>
             <th>Kilos recibidos</th>
@@ -96,7 +97,8 @@
             <tr>
               <td><%= r.numeroRemito %></td>
               <td><%= r.kilosDespachados %></td>
-              <td><%= r.palletsDespachados %></td>
+              <td><%= r.envase ? r.envase.nombre : '-' %></td>
+              <td><%= r.cantidadEnvases != null ? r.cantidadEnvases : '-' %></td>
               <td><%= r.cantidadIfco %></td>
               <td><%= r.recepcionEstado %></td>
               <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>

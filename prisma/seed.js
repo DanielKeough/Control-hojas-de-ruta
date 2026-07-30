@@ -106,6 +106,11 @@ async function main() {
     },
   });
 
+  const tiposEnvase = ['Bin', 'Pallet', 'Cajas', 'Tambores', 'Unidades', 'Bultos'];
+  for (const nombre of tiposEnvase) {
+    await prisma.envase.upsert({ where: { nombre }, update: {}, create: { nombre } });
+  }
+
   console.log('Seed completado.');
 }
 
