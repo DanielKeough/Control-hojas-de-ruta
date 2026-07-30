@@ -1,6 +1,7 @@
 const express = require('express');
 const prisma = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const { buildHojaRutaPdf } = require('../services/hojaRutaPdf');
 
 const router = express.Router();
 router.use(requireAuth);
@@ -165,6 +166,15 @@ router.get('/:id/imprimir', async (req, res) => {
     return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
   }
   res.render('hojas-ruta/imprimir', { title: `Imprimir Hoja de Ruta #${hoja.id}`, hoja, layout: false });
+});
+
+router.get('/:id/pdf', async (req, res) => {
+  const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
+  if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
+  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
+    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
+  }
+  buildHojaRutaPdf(hoja, res);
 });
 
 router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {

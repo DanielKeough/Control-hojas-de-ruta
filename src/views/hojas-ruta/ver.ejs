@@ -15,13 +15,16 @@
     <% } %>
     <%
       const printUrl = `${baseUrl}/hojas-ruta/${hoja.id}/imprimir`;
+      const pdfUrl = `/hojas-ruta/${hoja.id}/pdf`;
+      const pdfFilename = `HR-${String(hoja.id).padStart(6,'0')}.pdf`;
       const shareText = `Hoja de Ruta HR-${String(hoja.id).padStart(6,'0')} - ${hoja.transportista.razonSocial} - Camión ${hoja.camion.patente}\n${printUrl}`;
+      const shareTextWhatsapp = `Hoja de Ruta HR-${String(hoja.id).padStart(6,'0')} - ${hoja.transportista.razonSocial} - Camión ${hoja.camion.patente}. Se adjunta el PDF de la hoja de ruta.`;
       const shareSubject = `Hoja de Ruta HR-${String(hoja.id).padStart(6,'0')}`;
     %>
     <a href="<%= printUrl %>" target="_blank" class="btn btn-outline-dark btn-sm" title="Imprimir hoja de ruta">
       <i class="bi bi-printer"></i>
     </a>
-    <a href="https://wa.me/?text=<%- encodeURIComponent(shareText) %>" target="_blank" class="btn btn-success btn-sm" title="Enviar por WhatsApp">
+    <a href="#" id="btn-whatsapp-share" data-pdf-url="<%= pdfUrl %>" data-pdf-filename="<%= pdfFilename %>" data-text="<%= shareTextWhatsapp %>" class="btn btn-success btn-sm" title="Descargar PDF y enviar por WhatsApp">
       <i class="bi bi-whatsapp"></i>
     </a>
     <a href="mailto:?subject=<%- encodeURIComponent(shareSubject) %>&body=<%- encodeURIComponent(shareText) %>" class="btn btn-outline-secondary btn-sm" title="Enviar por correo">
@@ -29,6 +32,22 @@
     </a>
   </div>
 </div>
+
+<script>
+  document.getElementById('btn-whatsapp-share').addEventListener('click', function (e) {
+    e.preventDefault();
+    const btn = this;
+    const a = document.createElement('a');
+    a.href = btn.dataset.pdfUrl;
+    a.download = btn.dataset.pdfFilename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () {
+      window.open('https://wa.me/?text=' + encodeURIComponent(btn.dataset.text), '_blank');
+    }, 600);
+  });
+</script>
 
 <div class="card mb-4">
   <div class="card-header">Encabezado</div>
