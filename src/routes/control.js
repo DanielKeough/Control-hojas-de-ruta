@@ -67,7 +67,6 @@ router.post('/:id', async (req, res) => {
             palletsArlog: toNullableInt(r.palletsArlog),
             palletsDescartable: toNullableInt(r.palletsDescartable),
             ifcoRecibidos: toNullableInt(r.ifcoRecibidos),
-            ifcoRechazados: toNullableInt(r.ifcoRechazados),
             fechaControl: new Date(),
             usuarioControlId: req.user.id,
           },

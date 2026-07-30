@@ -101,7 +101,7 @@
         <thead>
           <tr>
             <th>Remito</th><th>Kilos desp.</th><th>Envase</th><th>Cant. Envases</th><th>IFCOs desp.</th><th>Remito IFCO</th>
-            <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib./rech.</th>
+            <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib.</th>
             <th>Entrega</th>
             <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
           </tr>
@@ -122,7 +122,7 @@
               <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>
               <td><%= r.palletsArlog != null ? r.palletsArlog : '-' %></td>
               <td><%= r.palletsDescartable != null ? r.palletsDescartable : '-' %></td>
-              <td><%= (r.ifcoRecibidos != null || r.ifcoRechazados != null) ? `${r.ifcoRecibidos||0} / ${r.ifcoRechazados||0}` : '-' %></td>
+              <td><%= r.ifcoRecibidos != null ? r.ifcoRecibidos : '-' %></td>
               <td>
                 <% const entBadge = { PENDIENTE: 'secondary', ENTREGADO: 'success', RECHAZADO: 'danger' }[r.estadoEntrega]; %>
                 <span class="badge bg-<%= entBadge %>"><%= r.estadoEntrega %></span>
