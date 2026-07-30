@@ -7,14 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Rol {
-  LOGISTICA
-  PORTERIA
-  ADMINISTRACION
-  CONDUCTOR
-  SUPERUSUARIO
-}
-
 enum EstadoHojaRuta {
   ABIERTA // cargada por Logistica, pendiente de control
   CONTROLADA // Porteria realizo el control y cierre
@@ -48,12 +40,8 @@ model Usuario {
   username      String     @unique
   passwordHash  String
   nombre        String
-  rol           Rol
   activo        Boolean    @default(true)
   createdAt     DateTime   @default(now())
-  // Solo se completa cuando rol = CONDUCTOR: vincula el login con su ficha de conductor
-  conductorId   Int?       @unique
-  conductor     Conductor? @relation(fields: [conductorId], references: [id])
 
   hojasCreadas        HojaRuta[]        @relation("creador")
   remitosControlados  Remito[]          @relation("usuarioControl")
@@ -99,7 +87,6 @@ model Conductor {
   categoriaOtraDetalle         String?
 
   hojasRuta HojaRuta[]
-  usuario   Usuario?
 }
 
 model Camion {

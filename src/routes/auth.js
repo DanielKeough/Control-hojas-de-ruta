@@ -27,8 +27,6 @@ router.post('/login', async (req, res) => {
     id: usuario.id,
     username: usuario.username,
     nombre: usuario.nombre,
-    rol: usuario.rol,
-    conductorId: usuario.conductorId,
   };
   const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '12h' });
   res.cookie(COOKIE_NAME, token, {

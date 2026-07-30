@@ -17,28 +17,27 @@ async function main() {
         username: adminUsername,
         passwordHash,
         nombre: adminNombre,
-        rol: 'SUPERUSUARIO',
       },
     });
-    console.log(`Usuario superusuario creado: ${adminUsername} / ${adminPassword}`);
+    console.log(`Usuario creado: ${adminUsername} / ${adminPassword}`);
   } else {
-    console.log('El usuario superusuario ya existe, no se recrea.');
+    console.log('El usuario administrador ya existe, no se recrea.');
   }
 
-  // Usuarios de ejemplo para los otros roles (solo si no existen)
+  // Usuarios de ejemplo (solo si no existen)
   const ejemplos = [
-    { username: 'administracion', password: 'admin123', nombre: 'Usuario Administracion', rol: 'ADMINISTRACION' },
-    { username: 'logistica', password: 'logistica123', nombre: 'Usuario Logistica', rol: 'LOGISTICA' },
-    { username: 'porteria', password: 'porteria123', nombre: 'Usuario Porteria', rol: 'PORTERIA' },
+    { username: 'administracion', password: 'admin123', nombre: 'Usuario Administracion' },
+    { username: 'logistica', password: 'logistica123', nombre: 'Usuario Logistica' },
+    { username: 'porteria', password: 'porteria123', nombre: 'Usuario Porteria' },
   ];
   for (const u of ejemplos) {
     const existe = await prisma.usuario.findUnique({ where: { username: u.username } });
     if (!existe) {
       const passwordHash = await bcrypt.hash(u.password, 10);
       await prisma.usuario.create({
-        data: { username: u.username, passwordHash, nombre: u.nombre, rol: u.rol },
+        data: { username: u.username, passwordHash, nombre: u.nombre },
       });
-      console.log(`Usuario creado: ${u.username} / ${u.password} (${u.rol})`);
+      console.log(`Usuario creado: ${u.username} / ${u.password}`);
     }
   }
 
@@ -54,7 +53,7 @@ async function main() {
     create: { razonSocial: 'Transporte Generico SA', controlKmHabilitado: false },
   });
 
-  const conductorPerez = await prisma.conductor.upsert({
+  await prisma.conductor.upsert({
     where: { dni: '20111222' },
     update: {},
     create: { apellido: 'Perez', nombre: 'Juan', dni: '20111222', transportistaId: montiMedia.id },
@@ -64,21 +63,6 @@ async function main() {
     update: {},
     create: { apellido: 'Gomez', nombre: 'Carlos', dni: '25333444', transportistaId: transporteGenerico.id },
   });
-
-  const existeUsuarioConductor = await prisma.usuario.findUnique({ where: { username: 'conductor' } });
-  if (!existeUsuarioConductor) {
-    const passwordHash = await bcrypt.hash('conductor123', 10);
-    await prisma.usuario.create({
-      data: {
-        username: 'conductor',
-        passwordHash,
-        nombre: 'Juan Perez (Conductor)',
-        rol: 'CONDUCTOR',
-        conductorId: conductorPerez.id,
-      },
-    });
-    console.log('Usuario creado: conductor / conductor123 (CONDUCTOR, vinculado a Juan Perez)');
-  }
 
   await prisma.camion.upsert({
     where: { patente: 'AB-123-XZ' },

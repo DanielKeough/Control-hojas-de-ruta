@@ -6,11 +6,6 @@ const { requireAuth } = require('../middleware/auth');
 const router = express.Router();
 router.use(requireAuth);
 
-// Roles que pueden consultar / escribir (alta y modificacion) / eliminar
-// cada tabla maestra. Si una tabla no define alguno de estos arrays, se
-// asume exclusivo de SUPERUSUARIO.
-const ROLES_LECTURA_DEFAULT = ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'];
-
 const CATEGORIAS_CONDUCTOR = [
   { value: 'C', label: 'C' },
   { value: 'D1', label: 'D1' },
@@ -28,9 +23,6 @@ const CONFIG = {
     model: 'transportista',
     singular: 'Transportista',
     titulo: 'Transportes',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['razonSocial', 'cuit', 'localidad', 'provincia', 'controlKmHabilitado', 'activo'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
@@ -47,9 +39,6 @@ const CONFIG = {
     model: 'conductor',
     singular: 'Conductor',
     titulo: 'Conductores',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['apellido', 'nombre', 'dni', 'transportistaId', 'condicion', 'activo'],
     fields: [
       { name: 'apellido', label: 'Apellido', type: 'text', required: true },
@@ -98,9 +87,6 @@ const CONFIG = {
     model: 'camion',
     singular: 'Camión',
     titulo: 'Camiones',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'tipo', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -138,9 +124,6 @@ const CONFIG = {
     model: 'acoplado',
     singular: 'Acoplado',
     titulo: 'Acoplados',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['patente', 'transportistaId', 'marca', 'modelo', 'capacidadPallets', 'activo'],
     fields: [
       { name: 'patente', label: 'Patente (dominio)', type: 'text', required: true },
@@ -160,9 +143,6 @@ const CONFIG = {
     model: 'envase',
     singular: 'Envase',
     titulo: 'Envases',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     fields: [
       { name: 'nombre', label: 'Nombre', type: 'text', required: true },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
@@ -172,9 +152,6 @@ const CONFIG = {
     model: 'cliente',
     singular: 'Cliente',
     titulo: 'Clientes',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     fields: [
       { name: 'razonSocial', label: 'Razón Social', type: 'text', required: true },
       { name: 'cuit', label: 'CUIT', type: 'text' },
@@ -189,9 +166,6 @@ const CONFIG = {
     model: 'sucursal',
     singular: 'Sucursal',
     titulo: 'Sucursales',
-    readRoles: ROLES_LECTURA_DEFAULT,
-    writeRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
-    deleteRoles: ['LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'],
     listFields: ['clienteId', 'nombre', 'numeroSucursal', 'domicilio', 'localidad', 'activo'],
     fields: [
       { name: 'clienteId', label: 'Cliente', type: 'select', optionsKey: 'clientes', required: true },
@@ -213,45 +187,12 @@ const CONFIG = {
     model: 'usuario',
     singular: 'Usuario',
     titulo: 'Usuarios del sistema',
-    // Exclusivo de SUPERUSUARIO: ni siquiera Administracion puede ver o
-    // modificar esta tabla.
-    readRoles: ['SUPERUSUARIO'],
-    writeRoles: ['SUPERUSUARIO'],
-    deleteRoles: ['SUPERUSUARIO'],
     fields: [
       { name: 'username', label: 'Usuario', type: 'text', required: true },
       { name: 'password', label: 'Contraseña', type: 'password', required: 'create-only' },
       { name: 'nombre', label: 'Nombre y Apellido', type: 'text', required: true },
-      {
-        name: 'rol',
-        label: 'Rol',
-        type: 'select',
-        options: [
-          { value: 'LOGISTICA', label: 'Logística' },
-          { value: 'PORTERIA', label: 'Portería' },
-          { value: 'ADMINISTRACION', label: 'Administración' },
-          { value: 'CONDUCTOR', label: 'Conductor' },
-          { value: 'SUPERUSUARIO', label: 'Superusuario' },
-        ],
-        required: true,
-      },
-      {
-        name: 'conductorId',
-        label: 'Conductor vinculado (solo si el rol es Conductor)',
-        type: 'select',
-        optionsKey: 'conductores',
-        conditional: { type: 'equals', field: 'rol', value: 'CONDUCTOR' },
-      },
       { name: 'activo', label: 'Activo', type: 'checkbox', defaultChecked: true },
     ],
-    postCoerce(data) {
-      if (data.rol !== 'CONDUCTOR') {
-        data.conductorId = null;
-      } else if (!data.conductorId) {
-        throw new Error('Elegí el conductor vinculado a este usuario (rol Conductor).');
-      }
-      return data;
-    },
   },
 };
 
@@ -271,35 +212,6 @@ function getConfig(req, res, next) {
   if (!cfg) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Tabla maestra inexistente.' });
   req.maestroKey = req.params.key;
   req.maestroConfig = cfg;
-  next();
-}
-
-function puedeLeer(cfg, rol) {
-  return (cfg.readRoles || ['SUPERUSUARIO']).includes(rol);
-}
-function puedeEscribir(cfg, rol) {
-  return (cfg.writeRoles || ['SUPERUSUARIO']).includes(rol);
-}
-function puedeEliminar(cfg, rol) {
-  return (cfg.deleteRoles || ['SUPERUSUARIO']).includes(rol);
-}
-
-function requireLectura(req, res, next) {
-  if (!puedeLeer(req.maestroConfig, req.user.rol)) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para consultar esta tabla.' });
-  }
-  next();
-}
-function requireEscritura(req, res, next) {
-  if (!puedeEscribir(req.maestroConfig, req.user.rol)) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para modificar esta tabla.' });
-  }
-  next();
-}
-function requireEliminar(req, res, next) {
-  if (!puedeEliminar(req.maestroConfig, req.user.rol)) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'No tenés permiso para eliminar registros de esta tabla.' });
-  }
   next();
 }
 
@@ -362,22 +274,22 @@ async function renderLista(req, res, cfg, error) {
     optionsMap,
     displayFields,
     error: error || null,
-    puedeEscribir: puedeEscribir(cfg, req.user.rol),
-    puedeEliminar: puedeEliminar(cfg, req.user.rol),
+    puedeEscribir: true,
+    puedeEliminar: true,
   });
 }
 
-router.get('/:key', getConfig, requireLectura, async (req, res) => {
+router.get('/:key', getConfig, async (req, res) => {
   await renderLista(req, res, req.maestroConfig, null);
 });
 
-router.get('/:key/nuevo', getConfig, requireEscritura, async (req, res) => {
+router.get('/:key/nuevo', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const optionsMap = await loadOptions(cfg);
   res.render('maestros/form', { title: `Nuevo ${cfg.singular}`, key: req.maestroKey, cfg, item: null, optionsMap, error: null });
 });
 
-router.get('/:key/:id', getConfig, requireLectura, async (req, res) => {
+router.get('/:key/:id', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const item = await prisma[cfg.model].findUnique({ where: { id: Number(req.params.id) } });
   if (!item) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Registro inexistente.' });
@@ -390,11 +302,11 @@ router.get('/:key/:id', getConfig, requireLectura, async (req, res) => {
     item,
     optionsMap,
     displayFields,
-    puedeEscribir: puedeEscribir(cfg, req.user.rol),
+    puedeEscribir: true,
   });
 });
 
-router.post('/:key', getConfig, requireEscritura, async (req, res) => {
+router.post('/:key', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   try {
     const data = coerceBody(cfg, req.body);
@@ -417,7 +329,7 @@ router.post('/:key', getConfig, requireEscritura, async (req, res) => {
   }
 });
 
-router.get('/:key/:id/editar', getConfig, requireEscritura, async (req, res) => {
+router.get('/:key/:id/editar', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const item = await prisma[cfg.model].findUnique({ where: { id: Number(req.params.id) } });
   if (!item) return res.status(404).render('error', { title: 'No encontrado', mensaje: 'Registro inexistente.' });
@@ -425,7 +337,7 @@ router.get('/:key/:id/editar', getConfig, requireEscritura, async (req, res) => 
   res.render('maestros/form', { title: `Editar ${cfg.singular}`, key: req.maestroKey, cfg, item, optionsMap, error: null });
 });
 
-router.post('/:key/:id', getConfig, requireEscritura, async (req, res) => {
+router.post('/:key/:id', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const id = Number(req.params.id);
   try {
@@ -448,7 +360,7 @@ router.post('/:key/:id', getConfig, requireEscritura, async (req, res) => {
   }
 });
 
-router.post('/:key/:id/eliminar', getConfig, requireEliminar, async (req, res) => {
+router.post('/:key/:id/eliminar', getConfig, async (req, res) => {
   const cfg = req.maestroConfig;
   const id = Number(req.params.id);
   try {

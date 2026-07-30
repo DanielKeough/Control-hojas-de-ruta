@@ -1,9 +1,9 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
-router.use(requireRole('ADMINISTRACION', 'SUPERUSUARIO'));
+router.use(requireAuth);
 
 router.get('/', async (req, res) => {
   const hojas = await prisma.hojaRuta.findMany({

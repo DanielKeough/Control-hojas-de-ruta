@@ -24,19 +24,4 @@ function requireAuth(req, res, next) {
   next();
 }
 
-function requireRole(...roles) {
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.redirect('/login');
-    }
-    if (!roles.includes(req.user.rol)) {
-      return res.status(403).render('error', {
-        title: 'Acceso denegado',
-        mensaje: 'No tenes permisos para acceder a esta seccion.',
-      });
-    }
-    next();
-  };
-}
-
-module.exports = { attachUser, requireAuth, requireRole, COOKIE_NAME, JWT_SECRET };
+module.exports = { attachUser, requireAuth, COOKIE_NAME, JWT_SECRET };

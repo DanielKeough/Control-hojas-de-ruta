@@ -4,15 +4,11 @@
     <span class="badge bg-<%= badge %>"><%= hoja.estado %></span>
   </h4>
   <div class="d-flex gap-2">
-    <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol) && hoja.estado === 'ABIERTA') { %>
+    <% if (hoja.estado === 'ABIERTA') { %>
       <a href="/hojas-ruta/<%= hoja.id %>/editar" class="btn btn-outline-secondary btn-sm">Editar</a>
     <% } %>
-    <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-      <a href="/control/<%= hoja.id %>" class="btn btn-outline-info btn-sm">Control y Cierre</a>
-    <% } %>
-    <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-      <a href="/facturacion/<%= hoja.id %>" class="btn btn-outline-success btn-sm">Imputación Factura</a>
-    <% } %>
+    <a href="/control/<%= hoja.id %>" class="btn btn-outline-info btn-sm">Control y Cierre</a>
+    <a href="/facturacion/<%= hoja.id %>" class="btn btn-outline-success btn-sm">Imputación Factura</a>
     <%
       const printUrl = `${baseUrl}/hojas-ruta/${hoja.id}/imprimir`;
       const pdfUrl = `/hojas-ruta/${hoja.id}/pdf`;
@@ -103,7 +99,7 @@
             <th>Remito</th><th>Kilos desp.</th><th>Envase</th><th>Cant. Envases</th><th>IFCOs desp.</th><th>Remito IFCO</th>
             <th>Recepción</th><th>Kilos recib.</th><th>Pallets ARLOG</th><th>Pallets descarte</th><th>IFCO recib.</th>
             <th>Entrega</th>
-            <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
+            <th>N° Factura</th>
           </tr>
         </thead>
         <tbody>
@@ -127,7 +123,7 @@
                 <% const entBadge = { PENDIENTE: 'secondary', ENTREGADO: 'success', RECHAZADO: 'danger' }[r.estadoEntrega]; %>
                 <span class="badge bg-<%= entBadge %>"><%= r.estadoEntrega %></span>
               </td>
-              <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><td><%= r.numeroFactura || '-' %></td><% } %>
+              <td><%= r.numeroFactura || '-' %></td>
             </tr>
           <% }); %>
         </tbody>

@@ -1,87 +1,51 @@
 <h4 class="mb-4">Bienvenido, <%= user.nombre %></h4>
 
 <div class="row g-3">
-  <% if (['LOGISTICA','PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Hojas de Ruta</h5>
-          <p class="card-text">
-            <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>Registrar una nueva hoja de ruta, o buscar entre las abiertas para completar destinos y remitos.<% } else if (user.rol === 'PORTERIA') { %>Registrar el ingreso de un camión con la tara, o consultar las existentes.<% } else { %>Consultar las hojas de ruta existentes.<% } %>
-          </p>
-          <% if (['LOGISTICA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-            <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Nueva Hoja de Ruta</a>
-          <% } %>
-          <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-            <a href="/hojas-ruta/nueva?modo=ingreso" class="btn btn-outline-primary btn-sm">Ingreso de Camión</a>
-          <% } %>
-          <a href="/hojas-ruta" class="btn btn-outline-secondary btn-sm">Ver listado</a>
-        </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Hojas de Ruta</h5>
+        <p class="card-text">Registrar una nueva hoja de ruta, o buscar entre las existentes para completar destinos y remitos.</p>
+        <a href="/hojas-ruta/nueva" class="btn btn-primary btn-sm">Nueva Hoja de Ruta</a>
+        <a href="/hojas-ruta/nueva?modo=ingreso" class="btn btn-outline-primary btn-sm">Ingreso de Camión</a>
+        <a href="/hojas-ruta" class="btn btn-outline-secondary btn-sm">Ver listado</a>
       </div>
     </div>
-  <% } %>
-  <% if (user.rol === 'CONDUCTOR') { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Mis Viajes</h5>
-          <p class="card-text">Cargar hora y kilometraje de inicio/fin de cada tramo de tus viajes.</p>
-          <a href="/mis-viajes" class="btn btn-primary btn-sm">Ir a Mis Viajes</a>
-        </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Mis Viajes</h5>
+        <p class="card-text">Cargar hora y kilometraje de inicio/fin de cada tramo de los viajes.</p>
+        <a href="/mis-viajes" class="btn btn-primary btn-sm">Ir a Mis Viajes</a>
       </div>
     </div>
-  <% } %>
-  <% if (['PORTERIA','ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Control y Cierre</h5>
-          <p class="card-text">Cargar ticket de pesada, tara y peso bruto (a la salida) y registrar la recepción de cada remito.</p>
-          <a href="/control" class="btn btn-info btn-sm">Ir a Control</a>
-        </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Control y Cierre</h5>
+        <p class="card-text">Cargar ticket de pesada, tara y peso bruto (a la salida) y registrar la recepción de cada remito.</p>
+        <a href="/control" class="btn btn-info btn-sm">Ir a Control</a>
       </div>
     </div>
-  <% } %>
-  <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Imputación de Factura</h5>
-          <p class="card-text">Marcar remitos entregados/rechazados e imputar la factura del transporte.</p>
-          <a href="/facturacion" class="btn btn-success btn-sm">Ir a Imputación</a>
-        </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Imputación de Factura</h5>
+        <p class="card-text">Marcar remitos entregados/rechazados e imputar la factura del transporte.</p>
+        <a href="/facturacion" class="btn btn-success btn-sm">Ir a Imputación</a>
       </div>
     </div>
-  <% } %>
-  <% if (user.rol === 'SUPERUSUARIO') { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Tablas Maestras</h5>
-          <p class="card-text">Transportes, conductores, camiones, acoplados, clientes, sucursales y usuarios.</p>
-          <a href="/maestros/transportistas" class="btn btn-outline-dark btn-sm">Administrar</a>
-        </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">Tablas Maestras</h5>
+        <p class="card-text">Transportes, conductores, camiones, acoplados, clientes, sucursales, envases y usuarios.</p>
+        <a href="/maestros/transportistas" class="btn btn-outline-dark btn-sm">Administrar</a>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Usuarios y Perfiles</h5>
-          <p class="card-text">Alta, baja y modificación de usuarios del sistema y sus perfiles. Exclusivo de Superusuario.</p>
-          <a href="/maestros/usuarios" class="btn btn-outline-danger btn-sm">Administrar Usuarios</a>
-        </div>
-      </div>
-    </div>
-  <% } %>
-  <% if (['LOGISTICA','PORTERIA','ADMINISTRACION'].includes(user.rol)) { %>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">Tablas Maestras</h5>
-          <p class="card-text">Transportes, conductores, camiones, acoplados, clientes y sucursales.</p>
-          <a href="/maestros/transportistas" class="btn btn-outline-dark btn-sm">Ver / Administrar</a>
-        </div>
-      </div>
-    </div>
-  <% } %>
+  </div>
 </div>

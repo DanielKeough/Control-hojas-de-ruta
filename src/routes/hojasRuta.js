@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 const { buildHojaRutaPdf } = require('../services/hojaRutaPdf');
 
 const router = express.Router();
@@ -92,9 +92,6 @@ const includeCompleto = {
 router.get('/', async (req, res) => {
   const { numero } = req.query;
   const where = numero ? { id: parseInt(numero, 10) || 0 } : {};
-  if (req.user.rol === 'CONDUCTOR') {
-    where.conductorId = req.user.conductorId || 0;
-  }
   const hojas = await prisma.hojaRuta.findMany({
     where,
     include: { transportista: true, camion: true, conductor: true },
@@ -104,12 +101,9 @@ router.get('/', async (req, res) => {
   res.render('hojas-ruta/lista', { title: 'Hojas de Ruta', hojas, numero: numero || '' });
 });
 
-router.get('/nueva', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.get('/nueva', async (req, res) => {
   const formData = await loadFormData();
-  // Porteria siempre carga solo el encabezado (ingreso del camion). Logistica,
-  // Administracion y Superusuario pueden elegir ese mismo modo simplificado
-  // agregando ?modo=ingreso al link (ver nav/dashboard).
-  const soloEncabezado = req.user.rol === 'PORTERIA' || req.query.modo === 'ingreso';
+  const soloEncabezado = req.query.modo === 'ingreso';
   res.render('hojas-ruta/form', {
     title: soloEncabezado ? 'Ingreso de Camión' : 'Nueva Hoja de Ruta',
     hoja: null,
@@ -119,7 +113,7 @@ router.get('/nueva', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUP
   });
 });
 
-router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.post('/', async (req, res) => {
   const formData = await loadFormData();
   const body = req.body;
   const soloEncabezado = body.soloEncabezado === '1';
@@ -152,9 +146,6 @@ router.post('/', requireRole('LOGISTICA', 'PORTERIA', 'ADMINISTRACION', 'SUPERUS
 router.get('/:id', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
-  }
   const baseUrl = `${req.protocol}://${req.get('host')}`;
   res.render('hojas-ruta/ver', { title: `Hoja de Ruta #${hoja.id}`, hoja, baseUrl });
 });
@@ -162,22 +153,16 @@ router.get('/:id', async (req, res) => {
 router.get('/:id/imprimir', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
-  }
   res.render('hojas-ruta/imprimir', { title: `Imprimir Hoja de Ruta #${hoja.id}`, hoja, layout: false });
 });
 
 router.get('/:id/pdf', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  if (req.user.rol === 'CONDUCTOR' && hoja.conductorId !== req.user.conductorId) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
-  }
   buildHojaRutaPdf(hoja, res);
 });
 
-router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.get('/:id/editar', async (req, res) => {
   const hoja = await prisma.hojaRuta.findUnique({ where: { id: Number(req.params.id) }, include: includeCompleto });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
   if (hoja.estado !== 'ABIERTA') {
@@ -190,7 +175,7 @@ router.get('/:id/editar', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUAR
   res.render('hojas-ruta/form', { title: `Editar Hoja de Ruta #${hoja.id}`, hoja, ...formData, error: null });
 });
 
-router.post('/:id', requireRole('LOGISTICA', 'ADMINISTRACION', 'SUPERUSUARIO'), async (req, res) => {
+router.post('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const formData = await loadFormData();
   try {

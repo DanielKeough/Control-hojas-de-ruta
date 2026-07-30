@@ -1,9 +1,9 @@
 const express = require('express');
 const prisma = require('../db');
-const { requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
-router.use(requireRole('CONDUCTOR'));
+router.use(requireAuth);
 
 function toNullableFloat(v) {
   if (v === undefined || v === null || v === '') return null;
@@ -16,14 +16,8 @@ function toNullableString(v) {
 }
 
 router.get('/', async (req, res) => {
-  if (!req.user.conductorId) {
-    return res.status(400).render('error', {
-      title: 'Usuario sin conductor vinculado',
-      mensaje: 'Tu usuario no tiene un conductor vinculado. Pedile a Administración que lo configure en Maestros > Usuarios.',
-    });
-  }
   const hojas = await prisma.hojaRuta.findMany({
-    where: { conductorId: req.user.conductorId, transportista: { controlKmHabilitado: true } },
+    where: { transportista: { controlKmHabilitado: true } },
     include: { transportista: true, camion: true },
     orderBy: { id: 'desc' },
     take: 50,
@@ -41,9 +35,6 @@ router.get('/:id', async (req, res) => {
     },
   });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  if (hoja.conductorId !== req.user.conductorId) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
-  }
   if (!hoja.transportista.controlKmHabilitado) {
     return res.status(400).render('error', {
       title: 'No aplica',
@@ -60,9 +51,6 @@ router.post('/:id', async (req, res) => {
     include: { transportista: true, detalles: true },
   });
   if (!hoja) return res.status(404).render('error', { title: 'No encontrada', mensaje: 'La hoja de ruta no existe.' });
-  if (hoja.conductorId !== req.user.conductorId) {
-    return res.status(403).render('error', { title: 'Acceso denegado', mensaje: 'Esta hoja de ruta no te pertenece.' });
-  }
   if (!hoja.transportista.controlKmHabilitado) {
     return res.status(400).render('error', { title: 'No aplica', mensaje: 'Este transporte no requiere ese dato.' });
   }
