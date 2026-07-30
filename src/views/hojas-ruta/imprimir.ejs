@@ -14,7 +14,7 @@
       .no-print { display: none !important; }
       body { padding: 0; }
       .destino-block { page-break-inside: avoid; }
-      @page { margin: 1.2cm; }
+      @page { size: A4 portrait; margin: 1.2cm; }
     }
   </style>
 </head>
@@ -32,7 +32,7 @@
       <h5 class="text-muted">HR-<%= String(hoja.id).padStart(6,'0') %></h5>
     </div>
     <div class="text-end small">
-      <div><strong>Fecha de impresión:</strong> <%= new Date().toLocaleString('es-AR') %></div>
+      <div><strong>Fecha de impresión:</strong> <%= new Date().toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) %></div>
       <div><strong>Estado:</strong> <%= hoja.estado %></div>
     </div>
   </div>
@@ -41,7 +41,7 @@
     <tbody>
       <tr>
         <th class="bg-light" style="width:18%">Fecha y hora emisión</th>
-        <td style="width:32%"><%= new Date(hoja.fechaHoraEmision).toLocaleString('es-AR') %></td>
+        <td style="width:32%"><%= new Date(hoja.fechaHoraEmision).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' }) %></td>
         <th class="bg-light" style="width:18%">Transporte</th>
         <td><%= hoja.transportista.razonSocial %></td>
       </tr>
@@ -86,10 +86,6 @@
             <th>Envase</th>
             <th>Cant.</th>
             <th>IFCO</th>
-            <th>Recepción</th>
-            <th>Kilos recibidos</th>
-            <th>Entrega</th>
-            <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><th>N° Factura</th><% } %>
           </tr>
         </thead>
         <tbody>
@@ -100,24 +96,18 @@
               <td><%= r.envase ? r.envase.nombre : '-' %></td>
               <td><%= r.cantidadEnvases != null ? r.cantidadEnvases : '-' %></td>
               <td><%= r.cantidadIfco %></td>
-              <td><%= r.recepcionEstado %></td>
-              <td><%= r.kilosRecepcionados != null ? r.kilosRecepcionados : '-' %></td>
-              <td><%= r.estadoEntrega %></td>
-              <% if (['ADMINISTRACION','SUPERUSUARIO'].includes(user.rol)) { %><td><%= r.numeroFactura || '-' %></td><% } %>
             </tr>
           <% }); %>
         </tbody>
       </table>
-      <div class="row">
-        <div class="col-6">
-          <div class="firma-linea">Firma y aclaración — Conductor</div>
-        </div>
-        <div class="col-6">
-          <div class="firma-linea">Firma y aclaración — Recepción conforme</div>
-        </div>
-      </div>
     </div>
   <% }); %>
+
+  <div class="row mt-5">
+    <div class="col-6">
+      <div class="firma-linea">Firma y aclaración — Conductor</div>
+    </div>
+  </div>
 
   <script>
     if (new URLSearchParams(window.location.search).get('auto') === '1') {
